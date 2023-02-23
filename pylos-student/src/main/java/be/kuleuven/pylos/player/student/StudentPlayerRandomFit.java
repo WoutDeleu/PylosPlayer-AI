@@ -24,7 +24,14 @@ public class StudentPlayerRandomFit extends PylosPlayer{
                 usableLocations.add(bl);
             }
         }
-        PylosLocation randomLocation = usableLocations.get(getRandom().nextInt(usableLocations.size()-1));
+        PylosLocation randomLocation;
+        if(usableLocations.size()==1){
+            randomLocation = usableLocations.get(0);
+        }
+        else{
+            randomLocation = usableLocations.get(getRandom().nextInt(usableLocations.size()-1));
+        }
+
         game.moveSphere(reserveSphere,randomLocation);
     }
 
@@ -37,7 +44,13 @@ public class StudentPlayerRandomFit extends PylosPlayer{
                 usedLocations.add(bl);
             }
         }
-        PylosSphere randomSphere = usedLocations.get(getRandom().nextInt(usedLocations.size()-1)).getSphere();
+        PylosSphere randomSphere;
+        if(usedLocations.size()==1){
+            randomSphere = usedLocations.get(0).getSphere();
+        }
+        else {
+            randomSphere = usedLocations.get(getRandom().nextInt(usedLocations.size()-1)).getSphere();
+        }
         game.removeSphere(randomSphere);
     }
 
