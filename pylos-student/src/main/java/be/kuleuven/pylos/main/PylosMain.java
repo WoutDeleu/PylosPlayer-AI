@@ -42,11 +42,11 @@ public class PylosMain {
 		Random random = new Random(0);
 
 		PylosPlayer randomPlayerCodes = new PylosPlayerRandomFit();
-//		PylosPlayer randomPlayerCodes = new PylosPlayerMiniMax();
-		PylosPlayer randomPlayerStudent = new StudentPlayerRandomFit();
+		PylosPlayer randomPlayerCodes2 = new PylosPlayerMiniMax();
+		//PylosPlayer randomPlayerStudent = new StudentPlayerRandomFit();
 
 		PylosBoard pylosBoard = new PylosBoard();
-		PylosGame pylosGame = new PylosGame(pylosBoard, randomPlayerCodes, randomPlayerStudent, random, PylosGameObserver.CONSOLE_GAME_OBSERVER, PylosPlayerObserver.NONE);
+		PylosGame pylosGame = new PylosGame(pylosBoard, randomPlayerCodes, randomPlayerCodes2, random, PylosGameObserver.CONSOLE_GAME_OBSERVER, PylosPlayerObserver.NONE);
 
 		pylosGame.play();
 	}
@@ -60,9 +60,8 @@ public class PylosMain {
 	public static void main(String[] args) {
 		/* !!! vm argument !!! -ea */
 
-		new PylosMain().startSingleGame();
+		//new PylosMain().startSingleGame();
 		//new PylosMain().startBattle();
 
 	}
-
 }
