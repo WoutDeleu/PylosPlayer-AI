@@ -1,9 +1,9 @@
 package be.kuleuven.pylos.player.student;
 
-import be.kuleuven.pylos.game.PylosBoard;
-import be.kuleuven.pylos.game.PylosGame;
-import be.kuleuven.pylos.game.PylosGameIF;
+import be.kuleuven.pylos.game.*;
 import be.kuleuven.pylos.player.PylosPlayer;
+
+import java.util.Stack;
 
 /**
  * Created by Jan on 20/02/2015.
@@ -15,6 +15,9 @@ public class StudentPlayer extends PylosPlayer {
 
 	@Override
 	public void doMove(PylosGameIF game, PylosBoard board) {
+
+		Action bestMove = findBestMove(board, game, this.PLAYER_COLOR);
+
 		/* board methods
 			* 	PylosLocation[] allLocations = board.getLocations();
 			* 	PylosSphere[] allSpheres = board.getSpheres();

@@ -28,7 +28,7 @@ public class StudentPlayerRandomFit extends PylosPlayer{
         if(usableLocations.size()==1){
             randomLocation = usableLocations.get(0);
         }
-        else{
+        else {
             randomLocation = usableLocations.get(getRandom().nextInt(usableLocations.size()-1));
         }
 
