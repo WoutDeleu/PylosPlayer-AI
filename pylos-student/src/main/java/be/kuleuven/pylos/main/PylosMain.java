@@ -4,6 +4,7 @@ import be.kuleuven.pylos.battle.Battle;
 import be.kuleuven.pylos.game.PylosBoard;
 import be.kuleuven.pylos.game.PylosGame;
 import be.kuleuven.pylos.game.PylosGameObserver;
+import be.kuleuven.pylos.game.PylosGameSimulator;
 import be.kuleuven.pylos.player.PylosPlayer;
 import be.kuleuven.pylos.player.PylosPlayerObserver;
 import be.kuleuven.pylos.player.codes.PylosPlayerBestFit;
@@ -53,15 +54,15 @@ public class PylosMain {
 
 	public void startBattle() {
 		StudentPlayerRandomFit randomPlayerStudent = new StudentPlayerRandomFit();
-		StudentPlayerRandomFit randomPlayerStudent2 = new StudentPlayerRandomFit();
-		Battle.play(randomPlayerStudent, randomPlayerStudent2, 100);
+		PylosPlayer randomPlayerPylos = new PylosPlayerRandomFit();
+		Battle.play(randomPlayerStudent, randomPlayerPylos, 100);
 	}
 
 	public static void main(String[] args) {
 		/* !!! vm argument !!! -ea */
 
 		//new PylosMain().startSingleGame();
-		new PylosMain().startBattle();
-
+		//new PylosMain().startBattle();
+		new PylosMain().startPerformanceBattles();
 	}
 }
