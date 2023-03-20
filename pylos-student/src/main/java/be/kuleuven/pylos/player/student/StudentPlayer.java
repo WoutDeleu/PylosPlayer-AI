@@ -19,7 +19,18 @@ public class StudentPlayer extends PylosPlayer {
 	public void doMove(PylosGameIF game, PylosBoard board) {
 		Stack<Action> previousMoves = new Stack<>();
 		PylosGameSimulator simulator = new PylosGameSimulator(game.getState(), this.PLAYER_COLOR, board);
-		Action bestMove = findBestAction(null,game ,this.PLAYER_COLOR, simulator, board, 3);
+		int depth = 3;
+
+		Action bestAction = new Action(Integer.MIN_VALUE); // Best action to take next
+		ArrayList<Action> possibleActions = generatePossibleActions(board,game.getState()); // Generate all possible actions
+
+		// Depth == 1, further actions don't need to be saved, only the board state passes along
+		for(Action a: possibleActions){
+			// Todo simulate the action to the board
+			int bestNextScore = findBestAction(game,this.PLAYER_COLOR,simulator,board, depth-1);
+			if(bestAction.score < bestNextScore)bestAction = a;
+			}
+		}
 
 		/* board methods
 			* 	PylosLocation[] allLocations = board.getLocations();
@@ -51,66 +62,67 @@ public class StudentPlayer extends PylosPlayer {
 		return 0;
 	}
 
-	public ArrayList<Action> generatePossibleActions(Action a){
+	public ArrayList<Action> generatePossibleActions(PylosBoard board, PylosGameState state){
 		// Keep in mind the color of the past action and the next kind of move
 		// Todo generate all possible moves from the boardstate of this action (MOVE & REMOVES)
 		return null;
 	}
 
-	public Action findBestAction(Action previousAction, PylosGameIF game, PylosPlayerColor color,
+	public int findBestAction(PylosGameIF game, PylosPlayerColor color,
 							   PylosGameSimulator simulator, PylosBoard board, int depth) {
-		// Todo simulate the action
-		// Todo save previous actions
 		// Todo add pruning
 
 		// End of the tree, or end of the game: evaluate the board and return the score
 		if(depth==0 || game.isFinished()){
-			previousAction.score = evaluate(board);
-
 			// Todo Undo the simulated action
 
-			return previousAction;
+			return evaluate(board);
 		}
 
-		Action bestAction; // Best action to take next
-		ArrayList<Action> possibleActions = generatePossibleActions(previousAction);
+		int bestScore; // Best action to take next
+		ArrayList<Action> possibleActions = generatePossibleActions(board,game.getState()); // Generate all possible actions
 
 		// Our turn, we want to maximize our score
 		if(color==this.PLAYER_COLOR){
-			bestAction = new Action(Integer.MIN_VALUE);
+			bestScore = Integer.MIN_VALUE;
 			for(Action a: possibleActions){
-				Action bestNextAction;
+				int bestNextScore;
 				// REMOVE
 				if(a.state.equals(PylosGameState.REMOVE_FIRST) || a.state.equals(PylosGameState.REMOVE_SECOND)){
 					// Change depth -1 to depth for the WANNES MANIER
-					bestNextAction = findBestAction(a,game,color,simulator,depth-1);
+					// Todo simulate the action to the board
+					bestNextScore = findBestAction(game,color,simulator,board, depth-1);
 				}
 				// MOVE
 				else {
-					bestNextAction = findBestAction(a,game,this.OTHER.PLAYER_COLOR,simulator,depth-1);
+					// Todo simulate the action to the board
+					bestNextScore = findBestAction(game,this.OTHER.PLAYER_COLOR,simulator,board, depth-1);
 				}
-				if(bestAction.score < bestNextAction.score)bestAction = bestNextAction;
+				if(bestScore < bestNextScore)bestScore = bestNextScore;
 			}
 		}
 
 		// Enemy turn, they want to minimize our score
 		else {
-			bestAction = new Action(Integer.MAX_VALUE);
+			bestScore = Integer.MAX_VALUE;
 			for(Action a: possibleActions){
-				Action bestNextAction;
+				int bestNextScore;
 				// REMOVE
 				if(a.state.equals(PylosGameState.REMOVE_FIRST) || a.state.equals(PylosGameState.REMOVE_SECOND)){
 					// Change depth -1 to depth for the WANNES MANIER
-					bestNextAction = findBestAction(a,game,color,simulator,board,depth-1);
+					// Todo simulate the action to the board
+					bestNextScore = findBestAction(game,color,simulator,board,depth-1);
 				}
 				// MOVE
 				else {
-					bestNextAction = findBestAction(a,game,this.PLAYER_COLOR,simulator,board,depth-1);
+					// Todo simulate the action to the board
+					bestNextScore = findBestAction(game,this.PLAYER_COLOR,simulator,board,depth-1);
 				}
-				if(bestAction.score > bestNextAction.score)bestAction = bestNextAction;
+				if(bestScore > bestNextScore)bestScore = bestNextScore;
 			}
 		}
-		return bestAction;
+
+		return bestScore;
 
 
 //		for(PylosLocation bl : board.getLocations()) {
