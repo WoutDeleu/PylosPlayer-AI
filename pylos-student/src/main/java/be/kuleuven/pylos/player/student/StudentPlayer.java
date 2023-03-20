@@ -76,6 +76,7 @@ public class StudentPlayer extends PylosPlayer {
 
 			if(a.state.equals(PylosGameState.MOVE) && detectSquare(board, color)){
 				// After creating a square the player can remove spheres instantly
+				System.out.println("Woop");
 				bestNextScore = minimax(game,color,simulator,board, depth-1);
 			}
 			// If the player passes, removes a second square or moves a sphere without creating a square,
@@ -206,9 +207,9 @@ public class StudentPlayer extends PylosPlayer {
 
 	public boolean detectSquare(PylosBoard board, PylosPlayerColor color){
 		// Check if there's a square on the board from this player's color
-		for(PylosSquare ps : board.getAllSquares()){
-			if(ps.isSquare(color))return true;
-		}
+//		for(PylosSquare ps : board.getAllSquares()){
+//			if(ps.isSquare(color))return true;
+//		}
 		return false;
 	}
 
