@@ -29,7 +29,7 @@ public class StudentPlayer extends PylosPlayer {
 			// Todo simulate the action to the board
 			int bestNextScore = findBestAction(game,this.PLAYER_COLOR,simulator,board, depth-1);
 			if(bestAction.score < bestNextScore)bestAction = a;
-			}
+
 		}
 
 		/* board methods
@@ -63,8 +63,8 @@ public class StudentPlayer extends PylosPlayer {
 	}
 
 	public ArrayList<Action> generatePossibleActions(PylosBoard board, PylosGameState state, PylosPlayerColor color){
-		// Keep in mind the color of the past action and the next kind of move
-		// Todo generate all possible actions from this board state of this action (MOVE & REMOVES)
+		// Keep in mind if the current state is REMOVE, only a select amount of actions are possible (remove2, pass)
+		// Todo generate all possible actions from this board + state + color (MOVES & REMOVES)
 		return null;
 	}
 
@@ -90,12 +90,12 @@ public class StudentPlayer extends PylosPlayer {
 				// REMOVE
 				if(a.state.equals(PylosGameState.REMOVE_FIRST) || a.state.equals(PylosGameState.REMOVE_SECOND)){
 					// Change depth -1 to depth for the WANNES MANIER
-					// Todo simulate the action to the board
+					// Todo simulate the action to the board and change the game state
 					bestNextScore = findBestAction(game,color,simulator,board, depth-1);
 				}
 				// MOVE
 				else {
-					// Todo simulate the action to the board
+					// Todo simulate the action to the board and change the game state
 					bestNextScore = findBestAction(game,this.OTHER.PLAYER_COLOR,simulator,board, depth-1);
 				}
 				if(bestScore < bestNextScore)bestScore = bestNextScore;
@@ -111,12 +111,12 @@ public class StudentPlayer extends PylosPlayer {
 				// REMOVE
 				if(a.state.equals(PylosGameState.REMOVE_FIRST) || a.state.equals(PylosGameState.REMOVE_SECOND)){
 					// Change depth -1 to depth for the WANNES MANIER
-					// Todo simulate the action to the board
+					// Todo simulate the action to the board and change the game state
 					bestNextScore = findBestAction(game,color,simulator,board,depth-1);
 				}
 				// MOVE
 				else {
-					// Todo simulate the action to the board
+					// Todo simulate the action to the board and change the game state
 					bestNextScore = findBestAction(game,this.PLAYER_COLOR,simulator,board,depth-1);
 				}
 				if(bestScore > bestNextScore)bestScore = bestNextScore;
