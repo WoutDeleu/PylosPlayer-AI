@@ -25,14 +25,15 @@ public class StudentPlayer extends PylosPlayer {
 	@Override
 	public void doRemove(PylosGameIF game, PylosBoard board) {
 		Action a = findAction(game, board);
-		game.removeSphere(a.pylosSphere);
+		if(a.pass)game.pass();
+		else game.removeSphere(a.pylosSphere);
 	}
 
 	@Override
 	public void doRemoveOrPass(PylosGameIF game, PylosBoard board) {
 		Action a = findAction(game, board);
-		if(a.pylosSphere != null)game.removeSphere(a.pylosSphere);
-		else game.pass();
+		if(a.pass)game.pass();
+		else game.removeSphere(a.pylosSphere);
 	}
 
 	public Action findAction(PylosGameIF game, PylosBoard board){
@@ -53,9 +54,14 @@ public class StudentPlayer extends PylosPlayer {
 	public int findNextScore(Action a, PylosGameIF game, PylosPlayerColor color,
 						 PylosGameSimulator simulator, PylosBoard board, int depth){
 		int bestNextScore;
-		boolean pass = false;
+		// PASS
+		if(a.pass){
+			if(color == PylosPlayerColor.DARK) color = PylosPlayerColor.LIGHT;
+			else color = PylosPlayerColor.DARK;
+			bestNextScore = minimax(game,color,simulator,board, depth-1);
+		}
 		// REMOVE
-		if(a.state.equals(PylosGameState.REMOVE_FIRST) && !pass){
+		else if(a.state.equals(PylosGameState.REMOVE_FIRST)){
 			// If the player removed his first sphere, he can remove a second one
 
 			// Change depth to depth -1 for the WANNES MANIER
