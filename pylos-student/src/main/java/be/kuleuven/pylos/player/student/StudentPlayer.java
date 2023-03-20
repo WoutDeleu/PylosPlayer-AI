@@ -46,36 +46,46 @@ public class StudentPlayer extends PylosPlayer {
 	}
 
 	public int evaluate(PylosBoard board){
-		//Calculate a value for the board state after a certain move
+		// Calculate a value for the board state after a certain move
+		// Todo evaluate the board state and give back a score
 		return 0;
 	}
 
 	public ArrayList<Action> generatePossibleActions(Action a){
 		// Keep in mind the color of the past action and the next kind of move
+		// Todo generate all possible moves from the boardstate of this action (MOVE & REMOVES)
 		return null;
 	}
 
 	public Action findBestMove(Action previousAction, PylosGameIF game, PylosPlayerColor color,
 							   PylosGameSimulator simulator, int depth) {
+		// Todo simulate the action
+		// Todo save previous actions
+		// Todo add pruning
 
 		// End of the tree, or end of the game: evaluate the board and return the score
 		if(depth==0 || game.isFinished()){
 			previousAction.score = evaluate(previousAction.board);
+
+			// Todo Undo the simulated action
+
 			return previousAction;
 		}
 
-		Action bestAction;
+		Action bestAction; // Best action to take next
 		ArrayList<Action> possibleActions = generatePossibleActions(previousAction);
 
-		// Our turn
+		// Our turn, we want to maximize our score
 		if(color==this.PLAYER_COLOR){
 			bestAction = new Action(Integer.MIN_VALUE);
 			for(Action a: possibleActions){
 				Action bestNextAction;
+				// REMOVE
 				if(a.state.equals(PylosGameState.REMOVE_FIRST) || a.state.equals(PylosGameState.REMOVE_SECOND)){
 					// Change depth -1 to depth for the WANNES MANIER
 					bestNextAction = findBestMove(a,game,color,simulator,depth-1);
 				}
+				// MOVE
 				else {
 					bestNextAction = findBestMove(a,game,this.OTHER.PLAYER_COLOR,simulator,depth-1);
 				}
@@ -83,15 +93,17 @@ public class StudentPlayer extends PylosPlayer {
 			}
 		}
 
-		// Enemy turn
+		// Enemy turn, they want to minimize our score
 		else {
 			bestAction = new Action(Integer.MAX_VALUE);
 			for(Action a: possibleActions){
 				Action bestNextAction;
+				// REMOVE
 				if(a.state.equals(PylosGameState.REMOVE_FIRST) || a.state.equals(PylosGameState.REMOVE_SECOND)){
 					// Change depth -1 to depth for the WANNES MANIER
 					bestNextAction = findBestMove(a,game,color,simulator,depth-1);
 				}
+				// MOVE
 				else {
 					bestNextAction = findBestMove(a,game,this.PLAYER_COLOR,simulator,depth-1);
 				}
