@@ -63,18 +63,6 @@ public class StudentPlayer extends PylosPlayer {
 			* game.pass() */
 	}
 
-	public int evaluate(PylosBoard board){
-		// Calculate a value for the board state after a certain move
-		// Todo evaluate the board state and give back a score
-		return 0;
-	}
-
-	public ArrayList<Action> generatePossibleActions(PylosBoard board, PylosGameState state, PylosPlayerColor color){
-		// Keep in mind if the current state is REMOVE, only a select amount of actions are possible (remove2, pass)
-		// Todo generate all possible actions from this board + state + color (MOVES & REMOVES)
-		return null;
-	}
-
 	public int minimax(PylosGameIF game, PylosPlayerColor color,
 							   PylosGameSimulator simulator, PylosBoard board, int depth) {
 		// Todo(extra) add pruning
@@ -169,6 +157,18 @@ public class StudentPlayer extends PylosPlayer {
 //		}
 //
 //		return bestMove;
+	}
+
+	public int evaluate(PylosBoard board){
+		// Calculate a value for the board state after a certain move
+		// Todo evaluate the board state and give back a score
+		return 0;
+	}
+
+	public ArrayList<Action> generatePossibleActions(PylosBoard board, PylosGameState state, PylosPlayerColor color){
+		// Keep in mind if the current state is REMOVE, only a select amount of actions are possible (remove2, pass)
+		// Todo generate all possible actions from this board + state + color (MOVES & REMOVES)
+		return null;
 	}
 
 	private void moveFromReserve(PylosGameSimulator simulator, Stack<Action> previousMoves, PylosLocation bl, PylosBoard board, PylosGameState state, PylosPlayerColor color) {
