@@ -3,6 +3,7 @@ package be.kuleuven.pylos.player.student;
 import be.kuleuven.pylos.game.*;
 import be.kuleuven.pylos.player.PylosPlayer;
 
+import java.net.StandardSocketOptions;
 import java.util.ArrayList;
 import java.util.Stack;
 
@@ -185,6 +186,12 @@ public class StudentPlayer extends PylosPlayer {
 				}
 			}
 		}
+		else if(state == PylosGameState.REMOVE_FIRST){
+			// remove a sphere in a square
+			for(PylosSphere ps : board.getSpheres(color)){
+				if(ps.canRemove()) possibleActions.add(new Action(ps,state,color));
+			}
+		}
 		else {
 			// Pass
 			possibleActions.add(new Action(true));
@@ -198,8 +205,10 @@ public class StudentPlayer extends PylosPlayer {
 	}
 
 	public boolean detectSquare(PylosBoard board, PylosPlayerColor color){
-		// Todo create function
 		// Check if there's a square on the board from this player's color
+		for(PylosSquare ps : board.getAllSquares()){
+			if(ps.isSquare(color))return true;
+		}
 		return false;
 	}
 
