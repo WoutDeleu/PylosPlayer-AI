@@ -57,7 +57,6 @@ public class StudentPlayer extends PylosPlayer {
 			// Todo simulate the action to the board
 			int bestNextScore = minimax(game,this.PLAYER_COLOR,simulator,board, depth-1);
 			if(bestAction.score < bestNextScore)bestAction = a;
-
 		}
 		return bestAction;
 	}
@@ -79,15 +78,25 @@ public class StudentPlayer extends PylosPlayer {
 			ArrayList<Action> possibleActions = generatePossibleActions(board,game.getState(),color); // Generate all possible actions
 			for(Action a: possibleActions){
 				int bestNextScore;
+				boolean pass = false;
 				// REMOVE
-				if(a.state.equals(PylosGameState.REMOVE_FIRST) || a.state.equals(PylosGameState.REMOVE_SECOND)){
-					// Change depth -1 to depth for the WANNES MANIER
+				if(a.state.equals(PylosGameState.REMOVE_FIRST) && !pass){
+					// If the player removed his first sphere, he can remove a second one
+
+					// Change depth to depth -1 for the WANNES MANIER
 					// Todo simulate the action to the board and change the game state
 					bestNextScore = minimax(game,color,simulator,board, depth-1);
 				}
 				// MOVE
 				else {
 					// Todo simulate the action to the board and change the game state
+
+					if(a.state.equals(PylosGameState.MOVE) && detectSquare(board, color)){
+						// After creating a square the player can remove spheres instantly
+						bestNextScore = minimax(game,color,simulator,board, depth-1);
+					}
+					// If the player passes, removes a second square or moves a sphere without creating a square,
+					// the turn goes to the opponent
 					bestNextScore = minimax(game,this.OTHER.PLAYER_COLOR,simulator,board, depth-1);
 				}
 				if(bestScore < bestNextScore)bestScore = bestNextScore;
@@ -101,16 +110,26 @@ public class StudentPlayer extends PylosPlayer {
 			ArrayList<Action> possibleActions = generatePossibleActions(board,game.getState(),color); // Generate all possible actions
 			for(Action a: possibleActions){
 				int bestNextScore;
+				boolean pass = false;
 				// REMOVE
-				if(a.state.equals(PylosGameState.REMOVE_FIRST) || a.state.equals(PylosGameState.REMOVE_SECOND)){
-					// Change depth -1 to depth for the WANNES MANIER
+				if(a.state.equals(PylosGameState.REMOVE_FIRST) && !pass){
+					// If the player removed his first sphere, he can remove a second one
+
+					// Change depth to depth -1 for the WANNES MANIER
 					// Todo simulate the action to the board and change the game state
-					bestNextScore = minimax(game,color,simulator,board,depth-1);
+					bestNextScore = minimax(game,color,simulator,board, depth-1);
 				}
 				// MOVE
 				else {
 					// Todo simulate the action to the board and change the game state
-					bestNextScore = minimax(game,this.PLAYER_COLOR,simulator,board,depth-1);
+
+					if(a.state.equals(PylosGameState.MOVE) && detectSquare(board, color)){
+						// After creating a square the player can remove spheres instantly
+						bestNextScore = minimax(game,color,simulator,board, depth-1);
+					}
+					// If the player passes, removes a second square or moves a sphere without creating a square,
+					// the turn goes to the opponent
+					bestNextScore = minimax(game,this.OTHER.PLAYER_COLOR,simulator,board, depth-1);
 				}
 				if(bestScore > bestNextScore)bestScore = bestNextScore;
 				// Todo Undo the simulated action
