@@ -15,9 +15,8 @@ public class StudentPlayer extends PylosPlayer {
 	// 3 deep
 	// After finding the right move we delete the whole tree
 
-	public void executeAction(PylosGameIF game, PylosBoard board){
+	public Action findAction(PylosGameIF game, PylosBoard board){
 		PylosGameSimulator simulator = new PylosGameSimulator(game.getState(), this.PLAYER_COLOR, board);
-
 
 		Action bestAction = new Action(Integer.MIN_VALUE); // Best action to take next
 		ArrayList<Action> possibleActions = generatePossibleActions(board,game.getState(), this.PLAYER_COLOR); // Generate all possible actions
@@ -29,13 +28,13 @@ public class StudentPlayer extends PylosPlayer {
 			if(bestAction.score < bestNextScore)bestAction = a;
 
 		}
-
-		// Todo execute action
+		return bestAction;
 	}
 
 	@Override
 	public void doMove(PylosGameIF game, PylosBoard board) {
-		executeAction(game, board);
+		Action a = findAction(game, board);
+		// Todo execute action
 		/* board methods
 			* 	PylosLocation[] allLocations = board.getLocations();
 			* 	PylosSphere[] allSpheres = board.getSpheres();
@@ -49,14 +48,16 @@ public class StudentPlayer extends PylosPlayer {
 
 	@Override
 	public void doRemove(PylosGameIF game, PylosBoard board) {
-		executeAction(game, board);
+		Action a = findAction(game, board);
+		// Todo execute action
 		/* game methods
 			* game.removeSphere(mySphere); */
 	}
 
 	@Override
 	public void doRemoveOrPass(PylosGameIF game, PylosBoard board) {
-		executeAction(game, board);
+		Action a = findAction(game, board);
+		// Todo execute action
 		/* game methods
 			* game.removeSphere(mySphere);
 			* game.pass() */
