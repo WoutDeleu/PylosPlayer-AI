@@ -197,8 +197,6 @@ public class StudentPlayer extends PylosPlayer {
 		PylosLocation location;
 		PylosGameState state;
 		PylosPlayerColor color;
-
-
 		public Action(PylosSphere pylosSphere, PylosLocation location, PylosGameState state, PylosPlayerColor color, PylosBoard board) {
 			this.pylosSphere = pylosSphere;
 			this.location = location;
@@ -208,8 +206,5 @@ public class StudentPlayer extends PylosPlayer {
 		public Action(int score){
 			this.score = score;
 		}
-
 	}
-
-
 }
