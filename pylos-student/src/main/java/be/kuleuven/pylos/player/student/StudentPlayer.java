@@ -189,7 +189,8 @@ public class StudentPlayer extends PylosPlayer {
 		return null;
 	}
 
-	public boolean detectSquare(PylosPlayerColor board, PylosPlayerColor color){
+	public boolean detectSquare(PylosBoard board, PylosPlayerColor color){
+		// Todo create function
 		// Check if there's a square on the board from this player's color
 		return false;
 	}
