@@ -78,9 +78,11 @@ public class StudentPlayer extends PylosPlayer {
 			}
 			// If the player passes, removes a second square or moves a sphere without creating a square,
 			// the turn goes to the opponent
-			if(color == PylosPlayerColor.DARK) color = PylosPlayerColor.LIGHT;
-			else color = PylosPlayerColor.DARK;
-			bestNextScore = minimax(game,color,simulator,board, depth-1);
+			else{
+				if(color == PylosPlayerColor.DARK) color = PylosPlayerColor.LIGHT;
+				else color = PylosPlayerColor.DARK;
+				bestNextScore = minimax(game,color,simulator,board, depth-1);
+			}
 		}
 		return bestNextScore;
 	}
