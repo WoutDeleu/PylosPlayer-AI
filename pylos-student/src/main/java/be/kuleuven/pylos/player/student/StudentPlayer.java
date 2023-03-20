@@ -11,9 +11,6 @@ import java.util.Stack;
  */
 public class StudentPlayer extends PylosPlayer {
 	int depth = 3;
-	// We simulate every move and calculate which move is better
-	// 3 deep
-	// After finding the right move we delete the whole tree
 	@Override
 	public void doMove(PylosGameIF game, PylosBoard board) {
 		Action a = findAction(game, board);
