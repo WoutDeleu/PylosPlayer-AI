@@ -17,33 +17,25 @@ public class StudentPlayer extends PylosPlayer {
 	@Override
 	public void doMove(PylosGameIF game, PylosBoard board) {
 		Action a = findAction(game, board);
-		// Todo execute action
+		game.moveSphere(a.pylosSphere, a.location);
 		/* board methods
 			* 	PylosLocation[] allLocations = board.getLocations();
 			* 	PylosSphere[] allSpheres = board.getSpheres();
 			* 	PylosSphere[] mySpheres = board.getSpheres(this);
 			* 	PylosSphere myReserveSphere = board.getReserve(this); */
-
-		/* game methods
-			* game.moveSphere(myReserveSphere, allLocations[0]); */
-
 	}
 
 	@Override
 	public void doRemove(PylosGameIF game, PylosBoard board) {
 		Action a = findAction(game, board);
-		// Todo execute action
-		/* game methods
-			* game.removeSphere(mySphere); */
+		game.removeSphere(a.pylosSphere);
 	}
 
 	@Override
 	public void doRemoveOrPass(PylosGameIF game, PylosBoard board) {
 		Action a = findAction(game, board);
-		// Todo execute action
-		/* game methods
-			* game.removeSphere(mySphere);
-			* game.pass() */
+		if(a.pylosSphere != null)game.removeSphere(a.pylosSphere);
+		else game.pass();
 	}
 
 	public Action findAction(PylosGameIF game, PylosBoard board){
