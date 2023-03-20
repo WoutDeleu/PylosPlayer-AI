@@ -189,6 +189,11 @@ public class StudentPlayer extends PylosPlayer {
 		return null;
 	}
 
+	public boolean detectSquare(PylosPlayerColor board, PylosPlayerColor color){
+		// Check if there's a square on the board from this player's color
+		return false;
+	}
+
 	private void moveFromReserve(PylosGameSimulator simulator, Stack<Action> previousMoves, PylosLocation bl, PylosBoard board, PylosGameState state, PylosPlayerColor color) {
 
 		PylosSphere pylosSphere = board.getReserve(this);
