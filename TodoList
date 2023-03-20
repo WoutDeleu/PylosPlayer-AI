@@ -1,0 +1,25 @@
+Evaluatiefunctie -> Wanneer
+Diepte stoppen?
+Updaten score op het einde
+
+Waarden & actie opslaan & beste doorgeven
+
+https://boardgamegeek.com/thread/1314818/strategy-guide-pylos
+
+
+if hasReserves:
+    movefromReserves
+    if possibleSquare:
+        takeBack
+
+if canMoveUp:
+    moveFromBoard_up
+    if possibleSquare:
+        takeBack
+
+
+
+takeback
+    takeback1
+    takebakck2
+    pass

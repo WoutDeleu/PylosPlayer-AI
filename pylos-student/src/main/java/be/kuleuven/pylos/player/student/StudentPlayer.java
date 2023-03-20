@@ -15,8 +15,9 @@ public class StudentPlayer extends PylosPlayer {
 
 	@Override
 	public void doMove(PylosGameIF game, PylosBoard board) {
-
-		Action bestMove = findBestMove(board, game, this.PLAYER_COLOR);
+		Stack<Action> previousMoves = new Stack<>();
+		PylosGameSimulator simulator = new PylosGameSimulator(game.getState(), this.PLAYER_COLOR, board);
+		Action bestMove = findBestMove(previousMoves, null, board, game, this.PLAYER_COLOR, simulator);
 
 		/* board methods
 			* 	PylosLocation[] allLocations = board.getLocations();
@@ -47,27 +48,69 @@ public class StudentPlayer extends PylosPlayer {
 		return 0;
 	}
 
-	public Action findBestMove(PylosBoard board, PylosGameIF game, PylosPlayerColor color) {
-		PylosGameSimulator simulator = new PylosGameSimulator(game.getState(),color, board);
-		Stack<Action> previousMoves = new Stack<>();
-		Action bestMove;
-		int bestMoveScore = 0;
+
+	public Action findBestMove(Stack<Action> previousMoves, Action bestMove, PylosBoard board, PylosGameIF game,
+							   PylosPlayerColor color, PylosGameSimulator simulator) {
 		for(PylosLocation bl : board.getLocations()) {
 			if(bl.isUsable()) {
-				if(0< board.getReservesSize(this)) {
-					// Todo:  move sphere from reserve
-				}
+				PylosSphere pylosSphere;
+				// Move sphere from reserve
+				if (0 < board.getReservesSize(this)) {
 
-				previousMoves.add(new Action(bl.getSphere()/*is deze juist?*/, bl,game.getState(),color));
-				simulator.moveSphere();
-				if(evaluateBoardState())
-				//findBestMove(simulator,board);
+					moveFromReserve(simulator, previousMoves, bl, board, game.getState(), color);
+					possibleTakeBack(previousMoves, bestMove, board, game,
+							color, simulator);
+					// Recursion
+					// kan zijn dat het nog altijd uw beurt is!!!!!
+
+					// reset board
+				}
+				// Move sphere on the board
+				if () {
+					// Do move
+
+					// Recursion
+					// kan zijn dat het nog altijd uw beurt is!!!!!
+
+					// reset board
+				}
+			}
+			// Remove sphere
+			if() {
+				// Do move
+
+				// Recursion
+				// kan zijn dat het nog altijd uw beurt is!!!!!
+
+				// reset board
 			}
 		}
+
 		return bestMove;
 	}
 
+	private void moveFromReserve(PylosGameSimulator simulator, Stack<Action> previousMoves, PylosLocation bl, PylosBoard board, PylosGameState state, PylosPlayerColor color) {
+
+		PylosSphere pylosSphere = board.getReserve(this);
+		simulator.moveSphere(pylosSphere, bl);
+		previousMoves.add(new Action(pylosSphere, bl, state, color));
+	}
+
+	public void takeBack() {
+
+	}
+	public void possibleTakeBack(Stack<Action> previousMoves, Action bestMove, PylosBoard board, PylosGameIF game,
+								 PylosPlayerColor color, PylosGameSimulator simulator) {
+		// CHECK IF POSSIBLE SQUARE1
+		if(game.removeSphere() == 0) {
+
+		}
+
+		// recursion happens here
+	}
+
 	public class Action {
+		int finalScore;
 		PylosSphere pylosSphere;
 		PylosLocation location;
 		PylosGameState state;
