@@ -162,7 +162,32 @@ public class StudentPlayer extends PylosPlayer {
 	public ArrayList<Action> generatePossibleActions(PylosBoard board, PylosGameState state, PylosPlayerColor color){
 		// Keep in mind if the current state is REMOVE, only a select amount of actions are possible (remove2, pass)
 		// Todo generate all possible actions from this board + state + color (MOVES & REMOVES)
-		return null;
+		ArrayList<Action> possibleActions = new ArrayList<>();
+
+		if(state == PylosGameState.MOVE){
+			// Move a sphere from the reserve to an available spot
+			PylosSphere reserveSphere = board.getReserve(color);
+			for (PylosLocation pl : board.getLocations()) {
+				if (pl.isUsable())possibleActions.add(new Action(reserveSphere, pl, state, color));
+			}
+
+			// Move a sphere on the board to a higher location
+			for (PylosSphere ps : board.getSpheres(color)){
+				for(PylosLocation pl : board.getLocations()){
+					if(ps.canMoveTo(pl)) possibleActions.add(new Action(ps, pl, state, color));
+				}
+			}
+		}
+		else {
+			// Pass
+			possibleActions.add(new Action(true));
+
+			// remove a sphere in a square
+			for(PylosSphere ps : board.getSpheres(color)){
+				if(ps.canRemove()) possibleActions.add(new Action(ps,state,color));
+			}
+		}
+		return possibleActions;
 	}
 
 	public boolean detectSquare(PylosBoard board, PylosPlayerColor color){
@@ -193,11 +218,12 @@ public class StudentPlayer extends PylosPlayer {
 
 	public class Action {
 		int score;
+		boolean pass;
 		PylosSphere pylosSphere;
 		PylosLocation location;
 		PylosGameState state;
 		PylosPlayerColor color;
-		public Action(PylosSphere pylosSphere, PylosLocation location, PylosGameState state, PylosPlayerColor color, PylosBoard board) {
+		public Action(PylosSphere pylosSphere, PylosLocation location, PylosGameState state, PylosPlayerColor color) {
 			this.pylosSphere = pylosSphere;
 			this.location = location;
 			this.state = state;
@@ -205,6 +231,15 @@ public class StudentPlayer extends PylosPlayer {
 		}
 		public Action(int score){
 			this.score = score;
+		}
+		public Action(boolean pass){
+			this.pass = pass;
+		}
+
+		public Action(PylosSphere pylosSphere, PylosGameState state, PylosPlayerColor color) {
+			this.pylosSphere = pylosSphere;
+			this.state = state;
+			this.color = color;
 		}
 	}
 }
