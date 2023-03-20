@@ -62,9 +62,9 @@ public class StudentPlayer extends PylosPlayer {
 		return 0;
 	}
 
-	public ArrayList<Action> generatePossibleActions(PylosBoard board, PylosGameState state){
+	public ArrayList<Action> generatePossibleActions(PylosBoard board, PylosGameState state, PylosPlayerColor color){
 		// Keep in mind the color of the past action and the next kind of move
-		// Todo generate all possible moves from the boardstate of this action (MOVE & REMOVES)
+		// Todo generate all possible actions from this board state of this action (MOVE & REMOVES)
 		return null;
 	}
 
@@ -80,11 +80,11 @@ public class StudentPlayer extends PylosPlayer {
 		}
 
 		int bestScore; // Best action to take next
-		ArrayList<Action> possibleActions = generatePossibleActions(board,game.getState()); // Generate all possible actions
 
 		// Our turn, we want to maximize our score
 		if(color==this.PLAYER_COLOR){
 			bestScore = Integer.MIN_VALUE;
+			ArrayList<Action> possibleActions = generatePossibleActions(board,game.getState(),color); // Generate all possible actions
 			for(Action a: possibleActions){
 				int bestNextScore;
 				// REMOVE
@@ -105,6 +105,7 @@ public class StudentPlayer extends PylosPlayer {
 		// Enemy turn, they want to minimize our score
 		else {
 			bestScore = Integer.MAX_VALUE;
+			ArrayList<Action> possibleActions = generatePossibleActions(board,game.getState(),color); // Generate all possible actions
 			for(Action a: possibleActions){
 				int bestNextScore;
 				// REMOVE
