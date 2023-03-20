@@ -177,9 +177,9 @@ public class StudentPlayer extends PylosPlayer {
 	public void possibleTakeBack(Stack<Action> previousMoves, Action bestMove, PylosBoard board, PylosGameIF game,
 								 PylosPlayerColor color, PylosGameSimulator simulator) {
 		// CHECK IF POSSIBLE SQUARE1
-		if(game.removeSphere() == 0) {
-
-		}
+//		if(game.removeSphere() == 0) {
+//
+//		}
 
 		// recursion happens here
 	}
