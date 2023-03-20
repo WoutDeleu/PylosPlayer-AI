@@ -122,7 +122,7 @@ public class StudentPlayer extends PylosPlayer {
 				if(bestScore > bestNextScore)bestScore = bestNextScore;
 			}
 		}
-
+		// Todo Undo the simulated action
 		return bestScore;
 
 
