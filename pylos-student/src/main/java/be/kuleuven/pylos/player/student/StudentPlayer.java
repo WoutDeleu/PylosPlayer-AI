@@ -10,19 +10,18 @@ import java.util.Stack;
  * Created by Jan on 20/02/2015.
  */
 public class StudentPlayer extends PylosPlayer {
-
+	int depth = 3;
 	// We simulate every move and calculate which move is better
 	// 3 deep
 	// After finding the right move we delete the whole tree
 
 	@Override
 	public void doMove(PylosGameIF game, PylosBoard board) {
-		Stack<Action> previousMoves = new Stack<>();
 		PylosGameSimulator simulator = new PylosGameSimulator(game.getState(), this.PLAYER_COLOR, board);
-		int depth = 3;
+
 
 		Action bestAction = new Action(Integer.MIN_VALUE); // Best action to take next
-		ArrayList<Action> possibleActions = generatePossibleActions(board,game.getState()); // Generate all possible actions
+		ArrayList<Action> possibleActions = generatePossibleActions(board,game.getState(), this.PLAYER_COLOR); // Generate all possible actions
 
 		// Depth == 1, further actions don't need to be saved, only the board state passes along
 		for(Action a: possibleActions){
@@ -32,6 +31,7 @@ public class StudentPlayer extends PylosPlayer {
 
 		}
 
+		// Todo execute action
 		/* board methods
 			* 	PylosLocation[] allLocations = board.getLocations();
 			* 	PylosSphere[] allSpheres = board.getSpheres();
@@ -99,6 +99,7 @@ public class StudentPlayer extends PylosPlayer {
 					bestNextScore = findBestAction(game,this.OTHER.PLAYER_COLOR,simulator,board, depth-1);
 				}
 				if(bestScore < bestNextScore)bestScore = bestNextScore;
+				// Todo Undo the simulated action
 			}
 		}
 
@@ -120,9 +121,10 @@ public class StudentPlayer extends PylosPlayer {
 					bestNextScore = findBestAction(game,this.PLAYER_COLOR,simulator,board,depth-1);
 				}
 				if(bestScore > bestNextScore)bestScore = bestNextScore;
+				// Todo Undo the simulated action
 			}
 		}
-		// Todo Undo the simulated action
+
 		return bestScore;
 
 
@@ -168,7 +170,7 @@ public class StudentPlayer extends PylosPlayer {
 
 		PylosSphere pylosSphere = board.getReserve(this);
 		simulator.moveSphere(pylosSphere, bl);
-		previousMoves.add(new Action(pylosSphere, bl, state, color));
+		//previousMoves.add(new Action(pylosSphere, bl, state, color));
 	}
 
 	public void takeBack() {
