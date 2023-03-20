@@ -14,23 +14,6 @@ public class StudentPlayer extends PylosPlayer {
 	// We simulate every move and calculate which move is better
 	// 3 deep
 	// After finding the right move we delete the whole tree
-
-	public Action findAction(PylosGameIF game, PylosBoard board){
-		PylosGameSimulator simulator = new PylosGameSimulator(game.getState(), this.PLAYER_COLOR, board);
-
-		Action bestAction = new Action(Integer.MIN_VALUE); // Best action to take next
-		ArrayList<Action> possibleActions = generatePossibleActions(board,game.getState(), this.PLAYER_COLOR); // Generate all possible actions
-
-		// Depth == 1, further actions don't need to be saved, only the board state passes along
-		for(Action a: possibleActions){
-			// Todo simulate the action to the board
-			int bestNextScore = minimax(game,this.PLAYER_COLOR,simulator,board, depth-1);
-			if(bestAction.score < bestNextScore)bestAction = a;
-
-		}
-		return bestAction;
-	}
-
 	@Override
 	public void doMove(PylosGameIF game, PylosBoard board) {
 		Action a = findAction(game, board);
@@ -61,6 +44,22 @@ public class StudentPlayer extends PylosPlayer {
 		/* game methods
 			* game.removeSphere(mySphere);
 			* game.pass() */
+	}
+
+	public Action findAction(PylosGameIF game, PylosBoard board){
+		PylosGameSimulator simulator = new PylosGameSimulator(game.getState(), this.PLAYER_COLOR, board);
+
+		Action bestAction = new Action(Integer.MIN_VALUE); // Best action to take next
+		ArrayList<Action> possibleActions = generatePossibleActions(board,game.getState(), this.PLAYER_COLOR); // Generate all possible actions
+
+		// Depth == 1, further actions don't need to be saved, only the board state passes along
+		for(Action a: possibleActions){
+			// Todo simulate the action to the board
+			int bestNextScore = minimax(game,this.PLAYER_COLOR,simulator,board, depth-1);
+			if(bestAction.score < bestNextScore)bestAction = a;
+
+		}
+		return bestAction;
 	}
 
 	public int minimax(PylosGameIF game, PylosPlayerColor color,
