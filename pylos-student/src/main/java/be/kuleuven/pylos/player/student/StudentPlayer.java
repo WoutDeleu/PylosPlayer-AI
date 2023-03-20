@@ -74,8 +74,6 @@ public class StudentPlayer extends PylosPlayer {
 
 		// End of the tree, or end of the game: evaluate the board and return the score
 		if(depth==0 || game.isFinished()){
-			// Todo Undo the simulated action
-
 			return evaluate(board);
 		}
 
