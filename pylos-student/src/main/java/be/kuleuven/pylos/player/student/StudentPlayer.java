@@ -25,6 +25,7 @@ public class StudentPlayer extends PylosPlayer {
 	@Override
 	public void doRemove(PylosGameIF game, PylosBoard board) {
 		Action a = findAction(game, board);
+		// Todo Mogen we hier passen????
 		if(a.pass)game.pass();
 		else game.removeSphere(a.pylosSphere);
 	}
@@ -168,8 +169,6 @@ public class StudentPlayer extends PylosPlayer {
 	}
 
 	public ArrayList<Action> generatePossibleActions(PylosBoard board, PylosGameState state, PylosPlayerColor color){
-		// Keep in mind if the current state is REMOVE, only a select amount of actions are possible (remove2, pass)
-		// Todo generate all possible actions from this board + state + color (MOVES & REMOVES)
 		ArrayList<Action> possibleActions = new ArrayList<>();
 
 		if(state == PylosGameState.MOVE){
