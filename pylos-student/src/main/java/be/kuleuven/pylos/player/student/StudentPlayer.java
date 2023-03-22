@@ -10,19 +10,22 @@ import java.util.Stack;
  * Created by Jan on 20/02/2015.
  */
 public class StudentPlayer extends PylosPlayer {
+	int depth = 3;
+	boolean WANNES = true;
+
 	/** Override Functions **/
 	@Override
 	public void doRemove(PylosGameIF game, PylosBoard board) {
 		PylosGameSimulator simulator = new PylosGameSimulator(game.getState(), this.PLAYER_COLOR, board);
 		Action a = findAction(simulator, board);
-		simulator.removeSphere(a.pylosSphere);
+		game.removeSphere(a.pylosSphere);
 	}
 	@Override
 	public void doRemoveOrPass(PylosGameIF game, PylosBoard board) {
 		PylosGameSimulator simulator = new PylosGameSimulator(game.getState(), this.PLAYER_COLOR, board);
 		Action a = findAction(simulator, board);
-		if(a.pass) simulator.pass();
-		else simulator.removeSphere(a.pylosSphere);
+		if(a.pass) game.pass();
+		else game.removeSphere(a.pylosSphere);
 	}
 	@Override
 	public void doMove(PylosGameIF game, PylosBoard board) {
@@ -37,9 +40,6 @@ public class StudentPlayer extends PylosPlayer {
 	}
 
 	/** AI Functions **/
-	int depth = 3;
-	boolean WANNES = true;
-
 
 	public ArrayList<Action> generatePossibleActions(PylosBoard board, PylosGameSimulator simulator) {
 		ArrayList<Action> possibleActions = new ArrayList<>();
@@ -60,7 +60,7 @@ public class StudentPlayer extends PylosPlayer {
 		else if(state == PylosGameState.REMOVE_FIRST) {
 			// remove a sphere in a square
 			for(PylosSphere sphere : board.getSpheres(color)){
-				if(sphere.canRemove()) possibleActions.add(new Action(sphere, state, color));
+				if(sphere.canRemove()) possibleActions.add(new Action(sphere, sphere.getLocation(), state, color));
 			}
 		}
 		// Remove Second sphere or pass
@@ -72,6 +72,7 @@ public class StudentPlayer extends PylosPlayer {
 				if(sphere.canRemove()) possibleActions.add(new Action(sphere, state, color));
 			}
 		}
+		assert possibleActions.size() != 0: "No possbible actions found";
 		return possibleActions;
 	}
 
@@ -79,45 +80,26 @@ public class StudentPlayer extends PylosPlayer {
 
 		Action bestAction = new Action(Integer.MIN_VALUE); // Best action to take next
 		ArrayList<Action> possibleActions = generatePossibleActions(board, simulator); // Generate all possible actions
-
-		// Depth == 1, further actions don't need to be saved, only the board state passes along
+		// Depth == 1, further actions don't need to be saved, only the board state passes alongd
 		for(Action action: possibleActions) {
-			int bestNextScore = findScore(action, simulator, board, depth);
-			if(bestAction.score < bestNextScore) bestAction = action;
+			int score = findScore(action, simulator, board, depth);
+			if(bestAction.score < score) bestAction = action;
 		}
 		return bestAction;
 	}
 
 	public int findScore(Action action, PylosGameSimulator simulator, PylosBoard board, int depth) {
-		int bestScore;
 		// PASS
-		if(action.pass) {
-			return simulatePass(simulator, board, depth);
-		}
-		// REMOVE
-		else if(action.state.equals(PylosGameState.REMOVE_FIRST)) {
-			// If the player removed his first sphere, he can remove action second one
-			return simulateRemove(action, true, simulator, board, depth);
-
-		}
+		if(action.pass) return simulatePass(simulator, board, depth);
+		// REMOVE FIRST
+		else if(action.state.equals(PylosGameState.REMOVE_FIRST)) return simulateRemove(action, true, simulator, board, depth);
+		// REMOVE SECOND
+		else if(action.state.equals(PylosGameState.REMOVE_SECOND)) return simulateRemove(action, false, simulator, board, depth);
 		// MOVE
-		else {
-			// Todo simulate the action to the board and change the game state
-			if(action.state.equals(PylosGameState.MOVE) && detectSquare(board, simulator.getColor())) {
-				// After creating action square the player can remove spheres instantly
-				System.out.println("Woop");
-				bestScore = minimax(simulator,board, depth-1);
-			}
-			// If the player passes, removes action second square or moves action sphere without creating action square,
-			// the turn goes to the opponent
-			else{
-				bestScore = simulatePass(simulator, board, depth);
-			}
-		}
-		return bestScore;
+		else return simulateMove(action, simulator, board, depth);
 	}
 	public int minimax(PylosGameSimulator simulator, PylosBoard board, int depth) {
-		// Todo(extra) add pruning
+		// Todo: Pruning
 
 		// End of the tree, or end of the game: evaluate the board and return the score
 		if(depth==0 || simulator.getState().equals(PylosGameState.COMPLETED) || simulator.getState().equals(PylosGameState.DRAW)) {
@@ -125,7 +107,6 @@ public class StudentPlayer extends PylosPlayer {
 		}
 
 		int bestScore; // Best action to take next
-
 		// Our turn, we want to maximize our score
 		if(simulator.getColor() == this.PLAYER_COLOR) {
 			bestScore = Integer.MIN_VALUE;
@@ -133,10 +114,8 @@ public class StudentPlayer extends PylosPlayer {
 			for(Action action : possibleActions) {
 				int bestNextScore = findScore(action, simulator, board, depth);
 				if(bestScore < bestNextScore) bestScore = bestNextScore;
-				// Todo Undo the simulated action
 			}
 		}
-
 		// Enemy turn, they want to minimize our score
 		else {
 			bestScore = Integer.MAX_VALUE;
@@ -144,16 +123,14 @@ public class StudentPlayer extends PylosPlayer {
 			for(Action a: possibleActions){
 				int bestNextScore = findScore(a, simulator, board, depth);
 				if(bestScore > bestNextScore) bestScore = bestNextScore;
-				// Todo Undo the simulated action
 			}
 		}
-
 		return bestScore;
 	}
 
 	public int evaluate(PylosBoard board){
 		// Calculate a value for the board state after a certain move
-		// Todo evaluate the board state and give back a score
+		// Todo: Evaluation
 		return 0;
 	}
 
@@ -186,7 +163,8 @@ public class StudentPlayer extends PylosPlayer {
 		// Recursion - Simulate further movement
 		int bestScore = minimax(simulator, board, depth-1);
 		// Reset board
-		simulator.undoMoveSphere(action.pylosSphere, prevLocation, prevState, prevColor);
+		if(prevLocation == null) simulator.undoAddSphere(action.pylosSphere, prevState, prevColor);
+		else simulator.undoMoveSphere(action.pylosSphere, prevLocation, prevState, prevColor);
 		return bestScore;
 	}
 
