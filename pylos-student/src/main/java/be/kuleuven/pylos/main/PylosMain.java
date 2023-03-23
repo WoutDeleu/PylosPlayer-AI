@@ -24,13 +24,13 @@ public class PylosMain {
 
 	public void startPerformanceBattles() {
 		Random random = new Random(0);
-		PylosPlayer[] players = new PylosPlayer[]{new PylosPlayerBestFit(), new PylosPlayerMiniMax(2), new PylosPlayerMiniMax(5), new PylosPlayerMiniMax(8)};
+		PylosPlayer[] players = new PylosPlayer[]{new PylosPlayerBestFit(), new PylosPlayerMiniMax(2)};
 
 		int[] wins = new int[players.length];
 		for (int i = 0; i < players.length; i++) {
 			PylosPlayer player = new StudentPlayer();
 			PylosPlayer playerDark = players[i];
-			double[] results = Battle.play(player, playerDark, 1000);
+			double[] results = Battle.play(player, playerDark, 100);
 			wins[i] = (int) Math.round(results[0] * 100);
 		}
 
@@ -43,7 +43,7 @@ public class PylosMain {
 
 		Random random = new Random(0);
 
-		StudentPlayerRandomFit randomPlayerStudent = new StudentPlayerRandomFit();
+		StudentPlayer randomPlayerStudent = new StudentPlayer();
 		StudentPlayerRandomFit randomPlayerStudent2 = new StudentPlayerRandomFit();
 		//PylosPlayer randomPlayerStudent = new StudentPlayerRandomFit();
 
@@ -54,16 +54,16 @@ public class PylosMain {
 	}
 
 	public void startBattle() {
-		StudentPlayerRandomFit randomPlayerStudent = new StudentPlayerRandomFit();
+		StudentPlayer playerStudent = new StudentPlayer();
 		PylosPlayer randomPlayerPylos = new PylosPlayerRandomFit();
-		Battle.play(randomPlayerStudent, randomPlayerPylos, 100);
+		Battle.play(playerStudent, randomPlayerPylos, 100);
 	}
 
 	public static void main(String[] args) {
 		/* !!! vm argument !!! -ea */
 
-		//new PylosMain().startSingleGame();
+		new PylosMain().startSingleGame();
 		//new PylosMain().startBattle();
-		new PylosMain().startPerformanceBattles();
+		//new PylosMain().startPerformanceBattles();
 	}
 }

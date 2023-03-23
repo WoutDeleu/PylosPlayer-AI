@@ -7,12 +7,16 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
 /**
  * Created by Jan on 20/02/2015.
  */
 public class StudentPlayer extends PylosPlayer {
+	static int counter = 0;
 	enum Figures { TRI, L, T}
-	int depth = 3;
+	int depth = 2;
 	boolean WANNES = true;
 
 	/** Override Functions **/
@@ -81,26 +85,35 @@ public class StudentPlayer extends PylosPlayer {
 
 		Action bestAction = new Action(Integer.MIN_VALUE); // Best action to take next
 		ArrayList<Action> possibleActions = generatePossibleActions(board, simulator); // Generate all possible actions
-		// Depth == 1, further actions don't need to be saved, only the board state passes alongd
+
+		// Pruning
+		int alpha = Integer.MIN_VALUE;
+		int beta = Integer.MAX_VALUE;
+
 		for(Action action: possibleActions) {
-			int score = findScore(action, simulator, board, depth);
-			if(bestAction.score < score) bestAction = action;
+			int score = findScore(action, simulator, board, depth, alpha, beta);
+			if(bestAction.score < score) {
+				bestAction = action;
+				bestAction.score = score;
+			}
+			alpha = max(alpha,score);
 		}
+		System.out.println(counter);
 		return bestAction;
 	}
 
-	public int findScore(Action action, PylosGameSimulator simulator, PylosBoard board, int depth) {
+	public int findScore(Action action, PylosGameSimulator simulator, PylosBoard board, int depth, int alpha, int beta) {
 		// PASS
-		if(action.pass) return simulatePass(simulator, board, depth);
+		if(action.pass) return simulatePass(simulator, board, depth, alpha, beta);
 		// REMOVE FIRST
-		else if(action.state.equals(PylosGameState.REMOVE_FIRST)) return simulateRemove(action, true, simulator, board, depth);
+		else if(action.state.equals(PylosGameState.REMOVE_FIRST)) return simulateRemove(action, true, simulator, board, depth, alpha, beta);
 		// REMOVE SECOND
-		else if(action.state.equals(PylosGameState.REMOVE_SECOND)) return simulateRemove(action, false, simulator, board, depth);
+		else if(action.state.equals(PylosGameState.REMOVE_SECOND)) return simulateRemove(action, false, simulator, board, depth, alpha, beta);
 		// MOVE
-		else return simulateMove(action, simulator, board, depth);
+		else return simulateMove(action, simulator, board, depth, alpha, beta);
 	}
-	public int minimax(PylosGameSimulator simulator, PylosBoard board, int depth) {
-		// Todo: Pruning
+	public int minimax(PylosGameSimulator simulator, PylosBoard board, int depth, int alpha, int beta) {
+		counter++;
 
 		// End of the tree, or end of the game: evaluate the board and return the score
 		if(depth==0 || simulator.getState().equals(PylosGameState.COMPLETED) || simulator.getState().equals(PylosGameState.DRAW)) {
@@ -112,9 +125,13 @@ public class StudentPlayer extends PylosPlayer {
 		if(simulator.getColor() == this.PLAYER_COLOR) {
 			bestScore = Integer.MIN_VALUE;
 			ArrayList<Action> possibleActions = generatePossibleActions(board, simulator); // Generate all possible actions
-			for(Action action : possibleActions) {
-				int bestNextScore = findScore(action, simulator, board, depth);
-				if(bestScore < bestNextScore) bestScore = bestNextScore;
+			for(Action a : possibleActions) {
+				int bestNextScore = findScore(a, simulator, board, depth, alpha, beta);
+				bestScore = max(bestScore, bestNextScore);
+				alpha = max(alpha, bestNextScore);
+				if(beta <= alpha){
+					break;
+				}
 			}
 		}
 		// Enemy turn, they want to minimize our score
@@ -122,8 +139,12 @@ public class StudentPlayer extends PylosPlayer {
 			bestScore = Integer.MAX_VALUE;
 			ArrayList<Action> possibleActions = generatePossibleActions(board, simulator); // Generate all possible actions
 			for(Action a: possibleActions){
-				int bestNextScore = findScore(a, simulator, board, depth);
-				if(bestScore > bestNextScore) bestScore = bestNextScore;
+				int bestNextScore = findScore(a, simulator, board, depth, alpha, beta);
+				bestScore = min(bestScore, bestNextScore);
+				beta = min(beta, bestNextScore);
+				if(beta <= alpha){
+					break;
+				}
 			}
 		}
 		return bestScore;
@@ -143,17 +164,17 @@ public class StudentPlayer extends PylosPlayer {
 		int reservesScore = board.getReservesSize(playerColor) -  board.getReservesSize(opponentColor);
 
 		// Amount of Squares
-		int squareScore = getSquares(playerColor, board) - getSquares(opponentColor, board);
+		//int squareScore = getSquares(playerColor, board) - getSquares(opponentColor, board);
 
 		// Amount of balls in center
-		int centerScore = getCenters(playerColor, board) - getCenters(opponentColor, board);
+		//int centerScore = getCenters(playerColor, board) - getCenters(opponentColor, board);
 
 		// Amount of T and L figures
-		int figureScore = getFiguresScore(playerColor, board) - getFiguresScore(opponentColor, board);
+		//int figureScore = getFiguresScore(playerColor, board) - getFiguresScore(opponentColor, board);
 
 		// todo: As much balls high
 
-		return weight_reserves*reservesScore + weight_squares*squareScore + weight_middleControl*centerScore + figureScore;
+		return weight_reserves*reservesScore /*+ weight_squares*squareScore + weight_middleControl*centerScore + figureScore*/;
 	}
 	private int getSquares(PylosPlayerColor playerColor, PylosBoard board) {
 		int count = 0;
@@ -367,7 +388,7 @@ public class StudentPlayer extends PylosPlayer {
 	}
 
 	/** SIMULATION **/
-	private int simulateRemove(Action action, boolean firstSphere, PylosGameSimulator simulator, PylosBoard board, int depth) {
+	private int simulateRemove(Action action, boolean firstSphere, PylosGameSimulator simulator, PylosBoard board, int depth, int alpha, int beta) {
 		int bestScore;
 		// Get previous State
 		PylosSphere sphere = action.pylosSphere;
@@ -377,15 +398,15 @@ public class StudentPlayer extends PylosPlayer {
 		// Simulate movement
 		simulator.removeSphere(sphere);
 		// Recursion - Simulate further movement
-		if(WANNES) bestScore = minimax(simulator, board, depth-1);
-		else bestScore = minimax(simulator, board, depth);
+		if(WANNES) bestScore = minimax(simulator, board, depth-1, alpha, beta);
+		else bestScore = minimax(simulator, board, depth, alpha, beta);
 		// Reset board
 		if(firstSphere) simulator.undoRemoveFirstSphere(sphere, prevLocation, prevState, prevColor);
 		else simulator.undoRemoveSecondSphere(sphere, prevLocation, prevState, prevColor);
 		return bestScore;
 	}
 
-	private int simulateMove(Action action, PylosGameSimulator simulator, PylosBoard board, int depth) {
+	private int simulateMove(Action action, PylosGameSimulator simulator, PylosBoard board, int depth, int alpha, int beta) {
 		// Get previous State
 		PylosGameState prevState = simulator.getState();
 		PylosPlayerColor prevColor = simulator.getColor();
@@ -393,21 +414,21 @@ public class StudentPlayer extends PylosPlayer {
 		// Simulate movement
 		simulator.moveSphere(action.pylosSphere, action.location);
 		// Recursion - Simulate further movement
-		int bestScore = minimax(simulator, board, depth-1);
+		int bestScore = minimax(simulator, board, depth-1, alpha, beta);
 		// Reset board
 		if(prevLocation == null) simulator.undoAddSphere(action.pylosSphere, prevState, prevColor);
 		else simulator.undoMoveSphere(action.pylosSphere, prevLocation, prevState, prevColor);
 		return bestScore;
 	}
 
-	private int simulatePass(PylosGameSimulator simulator, PylosBoard board, int depth) {
+	private int simulatePass(PylosGameSimulator simulator, PylosBoard board, int depth, int alpha, int beta) {
 		// Get previous State
 		PylosGameState prevState = simulator.getState();
 		PylosPlayerColor prevColor = simulator.getColor();
 		// Simulate movement
 		simulator.pass();
 		// Recursion - Simulate further movement
-		int bestScore = minimax(simulator, board, depth-1);
+		int bestScore = minimax(simulator, board, depth-1, alpha, beta);
 		// Reset board
 		simulator.undoPass(prevState, prevColor);
 		return bestScore;
