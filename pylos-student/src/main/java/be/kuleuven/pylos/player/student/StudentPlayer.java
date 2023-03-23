@@ -11,6 +11,7 @@ import java.util.Set;
  * Created by Jan on 20/02/2015.
  */
 public class StudentPlayer extends PylosPlayer {
+	enum Figures { TRI, L, T}
 	int depth = 3;
 	boolean WANNES = true;
 
@@ -131,9 +132,9 @@ public class StudentPlayer extends PylosPlayer {
 	/** EVALUATION **/
 	public int evaluate(PylosBoard board) {
 		// Calculate a value for the board state after a certain move
-		int weight_reserves = 1000;
-		int weight_squares = 0;
-		int weight_middleControl = 0;
+		int weight_reserves = 20;
+		int weight_squares = 15;
+		int weight_middleControl = 5;
 
 		PylosPlayerColor playerColor = this.PLAYER_COLOR;
 		PylosPlayerColor opponentColor = playerColor.other();
@@ -148,7 +149,7 @@ public class StudentPlayer extends PylosPlayer {
 		int centerScore = getCenters(playerColor, board) - getCenters(opponentColor, board);
 
 		// Amount of T and L figures
-		int figureScore = getFigures(playerColor, board) - getFigures(opponentColor, board);
+		int figureScore = getFiguresScore(playerColor, board) - getFiguresScore(opponentColor, board);
 
 		// todo: As much balls high
 
@@ -161,107 +162,6 @@ public class StudentPlayer extends PylosPlayer {
 			if(square.isSquare(playerColor)) count++;
 		}
 		return count;
-	}
-
-	private int getTriangles(PylosPlayerColor playerColor, PylosBoard board) {
-		int count = 0;
-		ArrayList<PylosSphere> spheres = filterReserves(board.getSpheres(playerColor));
-		for (PylosSphere possibleCenter : spheres) {
-			ArrayList<PylosSphere> adjacentSpheres = new ArrayList<>();
-			for (PylosSphere otherSphere : spheres) {
-				if (isAdjacent_Triangle(possibleCenter.getLocation(), otherSphere.getLocation())) adjacentSpheres.add(otherSphere);
-			}
-			count += assembleTriangles(adjacentSpheres);
-		}
-		return count;
-	}
-
-	private int assembleTriangles(ArrayList<PylosSphere> adjacentSpheres) {
-		int count = 0;
-		if(adjacentSpheres.size() < 2) return count;
-		Set<Integer[]> processedCorners = new HashSet<>();
-		for(PylosSphere sphere1 : adjacentSpheres) {
-			for(PylosSphere sphere2 : adjacentSpheres) {
-				if(isCornered(sphere1.getLocation(), sphere2.getLocation()) && !hasProcessed(processedCorners, new Integer[]{sphere1.ID, sphere2.ID})) {
-					count++;
-					processedCorners.add(new Integer[]{sphere1.ID, sphere2.ID});
-				}
-			}
-		}
-		return count;
-	}
-
-	private boolean hasProcessed(Set<Integer[]> processedCorners, Integer[] current) {
-		for(Integer[] combo : processedCorners) {
-			if(combo[0] == current[0] && combo[1] == current[1]) return true;
-			if(combo[0] == current[1] && combo[1] == current[0]) return true;
-		}
-		return false;
-	}
-
-	private boolean isCornered(PylosLocation location, PylosLocation location2) {
-		int x = location.X;
-		int y = location.Y;
-
-		int x2 = location2.X;
-		int y2 = location2.Y;
-
-		// Different orientations
-		boolean corner1 = (x2 == x+1 && y2 == y+1);
-		boolean corner2 = (x2 == x+1 && y2 == y-1);
-		boolean corner3 = (x2 == x-1 && y2 == y+1);
-		boolean corner4 = (x2 == x-1 && y2 == y-1);
-
-		return corner1 || corner2 || corner3 || corner4;
-	}
-
-	private ArrayList<PylosSphere> filterReserves(PylosSphere[] spheres) {
-		ArrayList<PylosSphere> spheresWithoutReserves = new ArrayList<>();
-		for(PylosSphere sphere : spheres) {
-			if(!sphere.isReserve()) spheresWithoutReserves.add(sphere);
-		}
-		return spheresWithoutReserves;
-	}
-
-	private boolean isAdjacent_Triangle(PylosLocation location, PylosLocation location2) {
-		int x = location.X;
-		int y = location.Y;
-		int z = location.Z;
-
-		int x2 = location2.X;
-		int y2 = location2.Y;
-		int z2 = location2.Z;
-
-		// Different orientations
-		boolean adj1 = (x2 == x && y2 == y+1 && z2 == z);
-		boolean adj2 = (x2 == x+1 && y2 == y && z2 == z);
-		boolean adj3 = (x2 == x && y2 == y-1 && z2 == z);
-		boolean adj4 = (x2 == x-1 && y2 == y && z2 == z);
-
-		return adj1 || adj2 || adj3 || adj4;
-	}
-
-	private int getFigures(PylosPlayerColor playerColor, PylosBoard board) {
-		return getFigures_T(playerColor, board) + getFigures_L(playerColor, board) + getTriangles(playerColor, board);
-	}
-
-	private int getFigures_L(PylosPlayerColor playerColor, PylosBoard board) {
-		ArrayList<PylosSphere> spheres = filterReserves(board.getSpheres(playerColor));
-		int count = 0;
-		for (PylosSphere possibleCenter : spheres) {
-			ArrayList<PylosSphere> adjacentSpheres = new ArrayList<>();
-			for (PylosSphere otherSphere : spheres) {
-				if (isAdjacent_Triangle(possibleCenter.getLocation(), otherSphere.getLocation())) adjacentSpheres.add(otherSphere);
-			}
-			count += assembleTriangles(adjacentSpheres);
-		}
-		return count;
-		// todo : L Filteren driehoeken
-	}
-	private int getFigures_T(PylosPlayerColor playerColor, PylosBoard board) {
-		// todo: implement Figure_T
-		// todo : T Filteren driehoeken (Bevat 2 driehoeken)
-		return 0;
 	}
 
 	private int getCenters(PylosPlayerColor playerColor, PylosBoard board) {
@@ -286,6 +186,185 @@ public class StudentPlayer extends PylosPlayer {
 		else return false;
 	}
 
+
+	/** FIGURES **/
+
+	private int getFiguresScore(PylosPlayerColor playerColor, PylosBoard board) {
+		int count_L = 0, count_T = 0, count_Tri= 0;
+		ArrayList<PylosSphere> spheres = filterReserves(board.getSpheres(playerColor));
+		for (PylosSphere possibleCenter : spheres) {
+			// Sphere who could potentially form a figure
+			ArrayList<PylosSphere> adjacentSpheres_L = new ArrayList<>();
+			ArrayList<PylosSphere> adjacentSpheres_T = new ArrayList<>();
+			ArrayList<PylosSphere> adjacentSpheres_Tri = new ArrayList<>();
+
+			// Fill in the possible spheres
+			for (PylosSphere otherSphere : spheres) {
+				if (isAdjacent(2, possibleCenter.getLocation(), otherSphere.getLocation()))
+					adjacentSpheres_L.add(otherSphere);
+				if (isAdjacent(1, possibleCenter.getLocation(), otherSphere.getLocation())) {
+					adjacentSpheres_T.add(otherSphere);
+					adjacentSpheres_Tri.add(otherSphere);
+				}
+			}
+			// Count the effective figures
+			count_L += assemble(Figures.L, adjacentSpheres_L);
+			count_T += assemble(Figures.T, adjacentSpheres_T);
+			count_Tri += assemble(Figures.TRI, adjacentSpheres_Tri);
+		}
+		return calculateFigureScores(count_Tri, count_L, count_T);
+	}
+
+	private ArrayList<PylosSphere> filterReserves(PylosSphere[] spheres) {
+		ArrayList<PylosSphere> spheresWithoutReserves = new ArrayList<>();
+		for(PylosSphere sphere : spheres) {
+			if(!sphere.isReserve()) spheresWithoutReserves.add(sphere);
+		}
+		return spheresWithoutReserves;
+	}
+	private int calculateFigureScores(int countTri, int countL, int countT) {
+		int weight_T = 10;
+		int weight_L = 10;
+		int weight_Triangle = 2;
+
+		int scoreTriangle = weight_Triangle * countTri;
+
+		// Take in account 1 T has already 2 triangles in it
+		int scoreT = (weight_T - weight_Triangle*2) * countT;
+
+		// Take in account 1 L has already 1 triangle in it
+		int scoreL = (weight_L-weight_Triangle) * countL;
+
+		return scoreL + scoreT + scoreTriangle;
+	}
+
+	// Count the figures which effectively occur
+	private int assemble(Figures f, ArrayList<PylosSphere> adjacentSpheres) {
+		int count = 0;
+		if(adjacentSpheres.size() < 2) return count;
+		Set<Integer[]> processedID = new HashSet<>();
+		for(PylosSphere sphere1 : adjacentSpheres) {
+			for(PylosSphere sphere2 : adjacentSpheres) {
+				switch(f) {
+					case TRI:
+						if(isCornered(sphere1.getLocation(), sphere2.getLocation()) && !hasProcessed2(processedID, new Integer[]{sphere1.ID, sphere2.ID})) {
+							count++;
+							processedID.add(new Integer[]{sphere1.ID, sphere2.ID});
+						}
+						break;
+					case L:
+						for(PylosSphere sphere3 : adjacentSpheres) {
+							if (isLshaped(sphere1.getLocation(), sphere2.getLocation(), sphere3.getLocation()) && !hasProcessed3(processedID, new Integer[]{sphere1.ID, sphere2.ID, sphere3.ID})) {
+								count++;
+								processedID.add(new Integer[]{sphere1.ID, sphere2.ID, sphere3.ID});
+							}
+						}
+						break;
+					case T:
+						for(PylosSphere sphere3 : adjacentSpheres) {
+							if (isTshaped(sphere1.getLocation(), sphere2.getLocation(), sphere3.getLocation()) && !hasProcessed3(processedID, new Integer[]{sphere1.ID, sphere2.ID, sphere3.ID})) {
+								count++;
+								processedID.add(new Integer[]{sphere1.ID, sphere2.ID, sphere3.ID});
+							}
+						}
+						break;
+				}
+			}
+		}
+		return count;
+	}
+
+	// todo : Deze 2 in 1 fucntie gieten
+	private boolean hasProcessed2(Set<Integer[]> processedCorners, Integer[] current) {
+		for(Integer[] combo : processedCorners) {
+			if(combo[0] == current[0] && combo[1] == current[1]) return true;
+			if(combo[0] == current[1] && combo[1] == current[0]) return true;
+		}
+		return false;
+	}
+	private boolean hasProcessed3(Set<Integer[]> processedCorners, Integer[] current) {
+		for(Integer[] combo : processedCorners) {
+			if(combo[0] == current[0] && combo[1] == current[1] && combo[2] == current[2]) return true;
+			if(combo[0] == current[1] && combo[1] == current[2] && combo[2] == current[0]) return true;
+			if(combo[0] == current[2] && combo[1] == current[0] && combo[2] == current[1]) return true;
+		}
+		return false;
+	}
+
+	private boolean isLshaped(PylosLocation location, PylosLocation location2, PylosLocation location3) {
+		// Different orientations
+		boolean corner1 = isCornered(location, location2);
+		boolean corner2 = isCornered(location, location3);
+		boolean corner3 = isCornered(location2, location3);
+
+		boolean straight1 = isStraight(location, location2);
+		boolean straight2 = isStraight(location, location3);
+		boolean straight3 = isStraight(location2, location3);
+
+		return (corner1 && (straight2 || straight3)) || (corner2 && (straight1 || straight3)) || (corner3 && (straight1 || straight2));
+	}
+
+	private boolean isTshaped(PylosLocation location, PylosLocation location2, PylosLocation location3) {
+		// Different orientations
+		boolean corner1 = isCornered(location, location2);
+		boolean corner2 = isCornered(location, location3);
+		boolean corner3 = isCornered(location2, location3);
+
+		return (corner1 && corner2) || (corner2 && corner3) || (corner1 && corner3);
+	}
+
+	private boolean isCornered(PylosLocation location, PylosLocation location2) {
+		int x = location.X;
+		int y = location.Y;
+
+		int x2 = location2.X;
+		int y2 = location2.Y;
+
+		// Different orientations
+		boolean corner1 = (x2 == x+1 && y2 == y+1);
+		boolean corner2 = (x2 == x+1 && y2 == y-1);
+		boolean corner3 = (x2 == x-1 && y2 == y+1);
+		boolean corner4 = (x2 == x-1 && y2 == y-1);
+
+		return corner1 || corner2 || corner3 || corner4;
+	}
+	private boolean isStraight(PylosLocation location, PylosLocation location2) {
+		int x = location.X;
+		int y = location.Y;
+
+		int x2 = location2.X;
+		int y2 = location2.Y;
+
+		// Different orientations
+		boolean straight1 = (x2 == x && y2 == y+1);
+		boolean straight2 = (x2 == x && y2 == y-1);
+		boolean straight3 = (x2 == x+1 && y2 == y);
+		boolean straight4 = (x2 == x-1 && y2 == y);
+
+		return straight1 || straight2 || straight3 || straight4;
+	}
+
+
+	private boolean isAdjacent(int maxMargin, PylosLocation location, PylosLocation location2) {
+		int x = location.X;
+		int y = location.Y;
+		int z = location.Z;
+
+		int x2 = location2.X;
+		int y2 = location2.Y;
+		int z2 = location2.Z;
+
+		boolean adj = false;
+		for(int i=1; i<=maxMargin; i++) {
+			// Different orientations
+			boolean adj1 = (x2 == x && y2 == y+i && z2 == z);
+			boolean adj2 = (x2 == x+i && y2 == y && z2 == z);
+			boolean adj3 = (x2 == x && y2 == y-i && z2 == z);
+			boolean adj4 = (x2 == x-i && y2 == y && z2 == z);
+			adj = adj || adj1 || adj2 || adj3 || adj4;
+		}
+		return adj;
+	}
 
 	/** SIMULATION **/
 	private int simulateRemove(Action action, boolean firstSphere, PylosGameSimulator simulator, PylosBoard board, int depth) {
