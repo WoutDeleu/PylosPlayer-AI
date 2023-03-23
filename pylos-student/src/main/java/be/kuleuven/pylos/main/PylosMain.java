@@ -24,13 +24,13 @@ public class PylosMain {
 
 	public void startPerformanceBattles() {
 		Random random = new Random(0);
-		PylosPlayer[] players = new PylosPlayer[]{new PylosPlayerBestFit(), new PylosPlayerMiniMax(2)};
+		PylosPlayer[] players = new PylosPlayer[]{/*new PylosPlayerBestFit(),*/ new PylosPlayerMiniMax(2)};
 
 		int[] wins = new int[players.length];
 		for (int i = 0; i < players.length; i++) {
 			PylosPlayer player = new StudentPlayer();
 			PylosPlayer playerDark = players[i];
-			double[] results = Battle.play(player, playerDark, 100);
+			double[] results = Battle.play(player, playerDark, 10);
 			wins[i] = (int) Math.round(results[0] * 100);
 		}
 
