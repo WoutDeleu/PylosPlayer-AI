@@ -151,7 +151,7 @@ public class StudentPlayer extends PylosPlayer {
 		// Amount of T and L figures
 		int figureScore = getFiguresScore(playerColor, board) - getFiguresScore(opponentColor, board);
 
-		// todo: As much balls high
+		// todo: As much balls high as possible
 
 		return weight_reserves*reservesScore + weight_squares*squareScore + weight_middleControl*centerScore + figureScore;
 	}
@@ -240,6 +240,7 @@ public class StudentPlayer extends PylosPlayer {
 
 	// Count the figures which effectively occur
 	private int assemble(Figures f, ArrayList<PylosSphere> adjacentSpheres) {
+		// TODO WOUT : zorgen dat het gat vrij is om opgevuld te worden zodat de T vrij is bv
 		int count = 0;
 		if(adjacentSpheres.size() < 2) return count;
 		Set<Integer[]> processedID = new HashSet<>();
