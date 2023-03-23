@@ -14,10 +14,10 @@ import static java.lang.Math.min;
  * Created by Jan on 20/02/2015.
  */
 public class StudentPlayer extends PylosPlayer {
-	static int counter = 0;
+	static int pruningCounter = 0;
 	enum Figures { TRI, L, T}
-	int depth = 2;
-	boolean WANNES = true;
+	int depth = 3;
+	boolean WANNES = false;
 
 	/** Override Functions **/
 	@Override
@@ -82,7 +82,7 @@ public class StudentPlayer extends PylosPlayer {
 	}
 
 	public Action findAction(PylosGameSimulator simulator, PylosBoard board) {
-
+		pruningCounter = 0;
 		Action bestAction = new Action(Integer.MIN_VALUE); // Best action to take next
 		ArrayList<Action> possibleActions = generatePossibleActions(board, simulator); // Generate all possible actions
 
@@ -98,22 +98,22 @@ public class StudentPlayer extends PylosPlayer {
 			}
 			alpha = max(alpha,score);
 		}
-		System.out.println(counter);
+		//System.out.println(pruningCounter);
 		return bestAction;
 	}
 
 	public int findScore(Action action, PylosGameSimulator simulator, PylosBoard board, int depth, int alpha, int beta) {
 		// PASS
 		if(action.pass) return simulatePass(simulator, board, depth, alpha, beta);
-		// REMOVE FIRST
+			// REMOVE FIRST
 		else if(action.state.equals(PylosGameState.REMOVE_FIRST)) return simulateRemove(action, true, simulator, board, depth, alpha, beta);
-		// REMOVE SECOND
+			// REMOVE SECOND
 		else if(action.state.equals(PylosGameState.REMOVE_SECOND)) return simulateRemove(action, false, simulator, board, depth, alpha, beta);
-		// MOVE
+			// MOVE
 		else return simulateMove(action, simulator, board, depth, alpha, beta);
 	}
 	public int minimax(PylosGameSimulator simulator, PylosBoard board, int depth, int alpha, int beta) {
-		counter++;
+		pruningCounter++;
 
 		// End of the tree, or end of the game: evaluate the board and return the score
 		if(depth==0 || simulator.getState().equals(PylosGameState.COMPLETED) || simulator.getState().equals(PylosGameState.DRAW)) {
@@ -167,14 +167,14 @@ public class StudentPlayer extends PylosPlayer {
 		//int squareScore = getSquares(playerColor, board) - getSquares(opponentColor, board);
 
 		// Amount of balls in center
-		//int centerScore = getCenters(playerColor, board) - getCenters(opponentColor, board);
+		int centerScore = getCenters(playerColor, board) - getCenters(opponentColor, board);
 
 		// Amount of T and L figures
 		//int figureScore = getFiguresScore(playerColor, board) - getFiguresScore(opponentColor, board);
 
-		// todo: As much balls high as possible
+		// todo: As much balls high
 
-		return weight_reserves*reservesScore /*+ weight_squares*squareScore + weight_middleControl*centerScore + figureScore*/;
+		return weight_reserves*reservesScore /*+ weight_squares*squareScore */+ weight_middleControl*centerScore/* + figureScore*/;
 	}
 	private int getSquares(PylosPlayerColor playerColor, PylosBoard board) {
 		int count = 0;
@@ -261,7 +261,6 @@ public class StudentPlayer extends PylosPlayer {
 
 	// Count the figures which effectively occur
 	private int assemble(Figures f, ArrayList<PylosSphere> adjacentSpheres) {
-		// TODO WOUT : zorgen dat het gat vrij is om opgevuld te worden zodat de T vrij is bv
 		int count = 0;
 		if(adjacentSpheres.size() < 2) return count;
 		Set<Integer[]> processedID = new HashSet<>();

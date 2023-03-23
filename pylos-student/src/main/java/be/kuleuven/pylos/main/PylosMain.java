@@ -19,7 +19,7 @@ import java.util.Random;
 public class PylosMain {
 
 	public PylosMain() {
-		startPerformanceBattles();
+
 	}
 
 	public void startPerformanceBattles() {
@@ -62,8 +62,8 @@ public class PylosMain {
 	public static void main(String[] args) {
 		/* !!! vm argument !!! -ea */
 
-		new PylosMain().startSingleGame();
+		//new PylosMain().startSingleGame();
 		//new PylosMain().startBattle();
-		//new PylosMain().startPerformanceBattles();
+		new PylosMain().startPerformanceBattles();
 	}
 }
