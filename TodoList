@@ -1,11 +1,18 @@
-1. Simulatie
-2. Evaluatie
-3. Pruning
+1. Parameters optimaliseren!!!
+2. Pruning
+    -> Diepte verhogen
 
-		// Get previous State
+Evaluatie - bepaald door:
+    - Reserve
+    - Squares
+    - Midden van het bord
+    - As high as possible
+    - Driehoeken
+    - Figuren: L, T
+             L: x x x         T: x x x
+                x                  x
 
-		// Simulate movement
+    - Iets met hoogte?
+    - Iets met zoveel mogelijk ballen (niet vanuit reserve) omhoog plaatsen
+        -> Impliciet enforcen?
 
-		// Recursion - Simulate further movement
-
-		// Reset board

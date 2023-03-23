@@ -4,7 +4,8 @@ import be.kuleuven.pylos.game.*;
 import be.kuleuven.pylos.player.PylosPlayer;
 
 import java.util.ArrayList;
-import java.util.Stack;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by Jan on 20/02/2015.
@@ -40,7 +41,6 @@ public class StudentPlayer extends PylosPlayer {
 	}
 
 	/** AI Functions **/
-
 	public ArrayList<Action> generatePossibleActions(PylosBoard board, PylosGameSimulator simulator) {
 		ArrayList<Action> possibleActions = new ArrayList<>();
 		PylosGameState state = simulator.getState();
@@ -128,11 +128,164 @@ public class StudentPlayer extends PylosPlayer {
 		return bestScore;
 	}
 
-	public int evaluate(PylosBoard board){
+	/** EVALUATION **/
+	public int evaluate(PylosBoard board) {
 		// Calculate a value for the board state after a certain move
-		// Todo: Evaluation
+		int weight_reserves = 1000;
+		int weight_squares = 0;
+		int weight_middleControl = 0;
+
+		PylosPlayerColor playerColor = this.PLAYER_COLOR;
+		PylosPlayerColor opponentColor = playerColor.other();
+
+		// Amount of reserves remaining
+		int reservesScore = board.getReservesSize(playerColor) -  board.getReservesSize(opponentColor);
+
+		// Amount of Squares
+		int squareScore = getSquares(playerColor, board) - getSquares(opponentColor, board);
+
+		// Amount of balls in center
+		int centerScore = getCenters(playerColor, board) - getCenters(opponentColor, board);
+
+		// Amount of T and L figures
+		int figureScore = getFigures(playerColor, board) - getFigures(opponentColor, board);
+
+		// todo: As much balls high
+
+		return weight_reserves*reservesScore + weight_squares*squareScore + weight_middleControl*centerScore + figureScore;
+	}
+	private int getSquares(PylosPlayerColor playerColor, PylosBoard board) {
+		int count = 0;
+		PylosSquare[] squares = board.getAllSquares();
+		for(PylosSquare square : squares) {
+			if(square.isSquare(playerColor)) count++;
+		}
+		return count;
+	}
+
+	private int getTriangles(PylosPlayerColor playerColor, PylosBoard board) {
+		int count = 0;
+		ArrayList<PylosSphere> spheres = filterReserves(board.getSpheres(playerColor));
+		for (PylosSphere possibleCenter : spheres) {
+			ArrayList<PylosSphere> adjacentSpheres = new ArrayList<>();
+			for (PylosSphere otherSphere : spheres) {
+				if (isAdjacent_Triangle(possibleCenter.getLocation(), otherSphere.getLocation())) adjacentSpheres.add(otherSphere);
+			}
+			count += assembleTriangles(adjacentSpheres);
+		}
+		return count;
+	}
+
+	private int assembleTriangles(ArrayList<PylosSphere> adjacentSpheres) {
+		int count = 0;
+		if(adjacentSpheres.size() < 2) return count;
+		Set<Integer[]> processedCorners = new HashSet<>();
+		for(PylosSphere sphere1 : adjacentSpheres) {
+			for(PylosSphere sphere2 : adjacentSpheres) {
+				if(isCornered(sphere1.getLocation(), sphere2.getLocation()) && !hasProcessed(processedCorners, new Integer[]{sphere1.ID, sphere2.ID})) {
+					count++;
+					processedCorners.add(new Integer[]{sphere1.ID, sphere2.ID});
+				}
+			}
+		}
+		return count;
+	}
+
+	private boolean hasProcessed(Set<Integer[]> processedCorners, Integer[] current) {
+		for(Integer[] combo : processedCorners) {
+			if(combo[0] == current[0] && combo[1] == current[1]) return true;
+			if(combo[0] == current[1] && combo[1] == current[0]) return true;
+		}
+		return false;
+	}
+
+	private boolean isCornered(PylosLocation location, PylosLocation location2) {
+		int x = location.X;
+		int y = location.Y;
+
+		int x2 = location2.X;
+		int y2 = location2.Y;
+
+		// Different orientations
+		boolean corner1 = (x2 == x+1 && y2 == y+1);
+		boolean corner2 = (x2 == x+1 && y2 == y-1);
+		boolean corner3 = (x2 == x-1 && y2 == y+1);
+		boolean corner4 = (x2 == x-1 && y2 == y-1);
+
+		return corner1 || corner2 || corner3 || corner4;
+	}
+
+	private ArrayList<PylosSphere> filterReserves(PylosSphere[] spheres) {
+		ArrayList<PylosSphere> spheresWithoutReserves = new ArrayList<>();
+		for(PylosSphere sphere : spheres) {
+			if(!sphere.isReserve()) spheresWithoutReserves.add(sphere);
+		}
+		return spheresWithoutReserves;
+	}
+
+	private boolean isAdjacent_Triangle(PylosLocation location, PylosLocation location2) {
+		int x = location.X;
+		int y = location.Y;
+		int z = location.Z;
+
+		int x2 = location2.X;
+		int y2 = location2.Y;
+		int z2 = location2.Z;
+
+		// Different orientations
+		boolean adj1 = (x2 == x && y2 == y+1 && z2 == z);
+		boolean adj2 = (x2 == x+1 && y2 == y && z2 == z);
+		boolean adj3 = (x2 == x && y2 == y-1 && z2 == z);
+		boolean adj4 = (x2 == x-1 && y2 == y && z2 == z);
+
+		return adj1 || adj2 || adj3 || adj4;
+	}
+
+	private int getFigures(PylosPlayerColor playerColor, PylosBoard board) {
+		return getFigures_T(playerColor, board) + getFigures_L(playerColor, board) + getTriangles(playerColor, board);
+	}
+
+	private int getFigures_L(PylosPlayerColor playerColor, PylosBoard board) {
+		ArrayList<PylosSphere> spheres = filterReserves(board.getSpheres(playerColor));
+		int count = 0;
+		for (PylosSphere possibleCenter : spheres) {
+			ArrayList<PylosSphere> adjacentSpheres = new ArrayList<>();
+			for (PylosSphere otherSphere : spheres) {
+				if (isAdjacent_Triangle(possibleCenter.getLocation(), otherSphere.getLocation())) adjacentSpheres.add(otherSphere);
+			}
+			count += assembleTriangles(adjacentSpheres);
+		}
+		return count;
+		// todo : L Filteren driehoeken
+	}
+	private int getFigures_T(PylosPlayerColor playerColor, PylosBoard board) {
+		// todo: implement Figure_T
+		// todo : T Filteren driehoeken (Bevat 2 driehoeken)
 		return 0;
 	}
+
+	private int getCenters(PylosPlayerColor playerColor, PylosBoard board) {
+		PylosSphere[] spheres = board.getSpheres(playerColor);
+		int count = 0;
+		for (PylosSphere sphere : spheres) {
+			if(isCentered(sphere, board)) count++;
+		}
+		return count;
+	}
+
+	private boolean isCentered(PylosSphere sphere, PylosBoard board) {
+		if(!sphere.isReserve()) {
+			PylosLocation location = sphere.getLocation();
+			int x = location.X;
+			int y = location.Y;
+			int size = board.SIZE;
+			boolean centeredX = x < size-1 && x > 0;
+			boolean centeredY = y < size-1 && y > 0;
+			return centeredX && centeredY;
+		}
+		else return false;
+	}
+
 
 	/** SIMULATION **/
 	private int simulateRemove(Action action, boolean firstSphere, PylosGameSimulator simulator, PylosBoard board, int depth) {
@@ -179,29 +332,6 @@ public class StudentPlayer extends PylosPlayer {
 		// Reset board
 		simulator.undoPass(prevState, prevColor);
 		return bestScore;
-	}
-
-
-	/** Util **/
-	public boolean detectSquare(PylosBoard board, PylosPlayerColor color) {
-		// Check if there's a square on the board from this player's color
-//		for(PylosSquare ps : board.getAllSquares()){
-//			if(ps.isSquare(color))return true;
-//		}
-		return false;
-	}
-
-	private void moveFromReserve(PylosGameSimulator simulator, Stack<Action> previousMoves, PylosLocation bl, PylosBoard board, PylosGameState state, PylosPlayerColor color) {
-
-		PylosSphere pylosSphere = board.getReserve(this);
-		simulator.moveSphere(pylosSphere, bl);
-	}
-
-	public void takeBack() {
-
-	}
-	public void possibleTakeBack(Stack<Action> previousMoves, Action bestMove, PylosBoard board, PylosGameIF game,
-								 PylosPlayerColor color, PylosGameSimulator simulator) {
 	}
 
 	public class Action {
