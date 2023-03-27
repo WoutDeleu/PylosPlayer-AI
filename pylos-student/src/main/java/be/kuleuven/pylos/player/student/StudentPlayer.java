@@ -16,7 +16,7 @@ import static java.lang.Math.min;
 public class StudentPlayer extends PylosPlayer {
 	static int pruningCounter = 0;
 	enum Figures { TRI, L, T }
-	int depth = 3;
+	int depth = 4;
 	boolean WANNES = false;
 
 	/** Override Functions **/

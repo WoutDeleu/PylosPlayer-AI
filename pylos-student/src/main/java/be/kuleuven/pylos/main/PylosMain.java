@@ -30,7 +30,7 @@ public class PylosMain {
 		for (int i = 0; i < players.length; i++) {
 			PylosPlayer player = new StudentPlayer();
 			PylosPlayer playerDark = players[i];
-			double[] results = Battle.play(player, playerDark, 20);
+			double[] results = Battle.play(player, playerDark, 5);
 			wins[i] = (int) Math.round(results[0] * 100);
 		}
 
