@@ -15,7 +15,7 @@ import static java.lang.Math.min;
  */
 public class StudentPlayer extends PylosPlayer {
 	static int pruningCounter = 0;
-	enum Figures { TRI, L, T}
+	enum Figures { TRI, L, T }
 	int depth = 3;
 	boolean WANNES = false;
 
@@ -38,11 +38,6 @@ public class StudentPlayer extends PylosPlayer {
 		PylosGameSimulator simulator = new PylosGameSimulator(game.getState(), this.PLAYER_COLOR, board);
 		Action bestAction = findAction(simulator, board);
 		game.moveSphere(bestAction.pylosSphere, bestAction.location);
-		/* board methods
-		 * 	PylosLocation[] allLocations = board.getLocations();
-		 * 	PylosSphere[] allSpheres = board.getSpheres();
-		 * 	PylosSphere[] mySpheres = board.getSpheres(this);
-		 * 	PylosSphere myReserveSphere = board.getReserve(this); */
 	}
 
 	/** AI Functions **/
@@ -153,9 +148,9 @@ public class StudentPlayer extends PylosPlayer {
 	/** EVALUATION **/
 	public int evaluate(PylosBoard board) {
 		// Calculate a value for the board state after a certain move
-		int weight_reserves = 20;
-		int weight_squares = 15;
-		int weight_middleControl = 5;
+		int weight_reserves = 4;
+		int weight_middleControl = 1;
+		int weight_squares = 1;
 
 		PylosPlayerColor playerColor = this.PLAYER_COLOR;
 		PylosPlayerColor opponentColor = playerColor.other();
@@ -164,17 +159,18 @@ public class StudentPlayer extends PylosPlayer {
 		int reservesScore = board.getReservesSize(playerColor) -  board.getReservesSize(opponentColor);
 
 		// Amount of Squares
-		//int squareScore = getSquares(playerColor, board) - getSquares(opponentColor, board);
+		int squareScore = getSquares(playerColor, board) - getSquares(opponentColor, board);
 
 		// Amount of balls in center
 		int centerScore = getCenters(playerColor, board) - getCenters(opponentColor, board);
 
 		// Amount of T and L figures
-		//int figureScore = getFiguresScore(playerColor, board) - getFiguresScore(opponentColor, board);
+		int figureScore = getFiguresScore(playerColor, board) - getFiguresScore(opponentColor, board);
+//		int figureScore = 0;
 
 		// todo: As much balls high
 
-		return weight_reserves*reservesScore /*+ weight_squares*squareScore */+ weight_middleControl*centerScore/* + figureScore*/;
+		return weight_reserves*reservesScore + weight_squares*squareScore + weight_middleControl*centerScore + figureScore;
 	}
 	private int getSquares(PylosPlayerColor playerColor, PylosBoard board) {
 		int count = 0;
@@ -229,9 +225,9 @@ public class StudentPlayer extends PylosPlayer {
 				}
 			}
 			// Count the effective figures
-			count_L += assemble(Figures.L, adjacentSpheres_L);
-			count_T += assemble(Figures.T, adjacentSpheres_T);
-			count_Tri += assemble(Figures.TRI, adjacentSpheres_Tri);
+			count_L += assemble(Figures.L, adjacentSpheres_L, board);
+			count_T += assemble(Figures.T, adjacentSpheres_T, board);
+			count_Tri += assemble(Figures.TRI, adjacentSpheres_Tri, board);
 		}
 		return calculateFigureScores(count_Tri, count_L, count_T);
 	}
@@ -244,9 +240,9 @@ public class StudentPlayer extends PylosPlayer {
 		return spheresWithoutReserves;
 	}
 	private int calculateFigureScores(int countTri, int countL, int countT) {
-		int weight_T = 10;
-		int weight_L = 10;
-		int weight_Triangle = 2;
+		int weight_T = 2;
+		int weight_L = 2;
+		int weight_Triangle = 1;
 
 		int scoreTriangle = weight_Triangle * countTri;
 
@@ -260,7 +256,7 @@ public class StudentPlayer extends PylosPlayer {
 	}
 
 	// Count the figures which effectively occur
-	private int assemble(Figures f, ArrayList<PylosSphere> adjacentSpheres) {
+	private int assemble(Figures f, ArrayList<PylosSphere> adjacentSpheres, PylosBoard board) {
 		int count = 0;
 		if(adjacentSpheres.size() < 2) return count;
 		Set<Integer[]> processedID = new HashSet<>();
@@ -268,14 +264,15 @@ public class StudentPlayer extends PylosPlayer {
 			for(PylosSphere sphere2 : adjacentSpheres) {
 				switch(f) {
 					case TRI:
-						if(isCornered(sphere1.getLocation(), sphere2.getLocation()) && !hasProcessed2(processedID, new Integer[]{sphere1.ID, sphere2.ID})) {
+						if(isCornered(board, sphere1.getLocation(), sphere2.getLocation()) && !hasProcessed2(processedID, new Integer[]{sphere1.ID, sphere2.ID})) {
 							count++;
 							processedID.add(new Integer[]{sphere1.ID, sphere2.ID});
 						}
 						break;
 					case L:
 						for(PylosSphere sphere3 : adjacentSpheres) {
-							if (isLshaped(sphere1.getLocation(), sphere2.getLocation(), sphere3.getLocation()) && !hasProcessed3(processedID, new Integer[]{sphere1.ID, sphere2.ID, sphere3.ID})) {
+
+							if (isLshaped(board, sphere1.getLocation(), sphere2.getLocation(), sphere3.getLocation()) && !hasProcessed3(processedID, new Integer[]{sphere1.ID, sphere2.ID, sphere3.ID})) {
 								count++;
 								processedID.add(new Integer[]{sphere1.ID, sphere2.ID, sphere3.ID});
 							}
@@ -283,7 +280,7 @@ public class StudentPlayer extends PylosPlayer {
 						break;
 					case T:
 						for(PylosSphere sphere3 : adjacentSpheres) {
-							if (isTshaped(sphere1.getLocation(), sphere2.getLocation(), sphere3.getLocation()) && !hasProcessed3(processedID, new Integer[]{sphere1.ID, sphere2.ID, sphere3.ID})) {
+							if (isTshaped(board, sphere1.getLocation(), sphere2.getLocation(), sphere3.getLocation()) && !hasProcessed3(processedID, new Integer[]{sphere1.ID, sphere2.ID, sphere3.ID})) {
 								count++;
 								processedID.add(new Integer[]{sphere1.ID, sphere2.ID, sphere3.ID});
 							}
@@ -312,11 +309,11 @@ public class StudentPlayer extends PylosPlayer {
 		return false;
 	}
 
-	private boolean isLshaped(PylosLocation location, PylosLocation location2, PylosLocation location3) {
+	private boolean isLshaped(PylosBoard board, PylosLocation location, PylosLocation location2, PylosLocation location3) {
 		// Different orientations
-		boolean corner1 = isCornered(location, location2);
-		boolean corner2 = isCornered(location, location3);
-		boolean corner3 = isCornered(location2, location3);
+		boolean corner1 = isCornered(board, location, location2);
+		boolean corner2 = isCornered(board, location, location3);
+		boolean corner3 = isCornered(board, location2, location3);
 
 		boolean straight1 = isStraight(location, location2);
 		boolean straight2 = isStraight(location, location3);
@@ -325,16 +322,16 @@ public class StudentPlayer extends PylosPlayer {
 		return (corner1 && (straight2 || straight3)) || (corner2 && (straight1 || straight3)) || (corner3 && (straight1 || straight2));
 	}
 
-	private boolean isTshaped(PylosLocation location, PylosLocation location2, PylosLocation location3) {
+	private boolean isTshaped(PylosBoard board, PylosLocation location, PylosLocation location2, PylosLocation location3) {
 		// Different orientations
-		boolean corner1 = isCornered(location, location2);
-		boolean corner2 = isCornered(location, location3);
-		boolean corner3 = isCornered(location2, location3);
+		boolean corner1 = isCornered(board, location, location2);
+		boolean corner2 = isCornered(board, location, location3);
+		boolean corner3 = isCornered(board, location2, location3);
 
 		return (corner1 && corner2) || (corner2 && corner3) || (corner1 && corner3);
 	}
 
-	private boolean isCornered(PylosLocation location, PylosLocation location2) {
+	private boolean isCornered(PylosBoard board, PylosLocation location, PylosLocation location2) {
 		int x = location.X;
 		int y = location.Y;
 
@@ -347,6 +344,10 @@ public class StudentPlayer extends PylosPlayer {
 		boolean corner3 = (x2 == x-1 && y2 == y+1);
 		boolean corner4 = (x2 == x-1 && y2 == y-1);
 
+		if(corner1) corner1 = board.getBoardLocation(x+1, y, location.Z).isUsable() || board.getBoardLocation(x, y+1, location.Z).isUsable();
+		if(corner2) corner2 = board.getBoardLocation(x+1, y, location.Z).isUsable() || board.getBoardLocation(x, y-1, location.Z).isUsable();
+		if(corner3) corner3 = board.getBoardLocation(x-1, y, location.Z).isUsable() || board.getBoardLocation(x, y+1, location.Z).isUsable();
+		if(corner4) corner4 = board.getBoardLocation(x-1, y, location.Z).isUsable() || board.getBoardLocation(x, y-1, location.Z).isUsable();
 		return corner1 || corner2 || corner3 || corner4;
 	}
 	private boolean isStraight(PylosLocation location, PylosLocation location2) {
