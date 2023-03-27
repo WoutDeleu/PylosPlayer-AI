@@ -16,9 +16,8 @@ import static java.lang.Math.min;
 public class StudentPlayer extends PylosPlayer {
 	static int pruningCounter = 0;
 	enum Figures { TRI, L, T }
-	int depth = 4;
-	boolean WANNES = false;
-
+	int depth = 6;
+	boolean WANNES = true;
 	/** Override Functions **/
 	@Override
 	public void doRemove(PylosGameIF game, PylosBoard board) {
@@ -53,7 +52,7 @@ public class StudentPlayer extends PylosPlayer {
 				if (location.isUsable()) possibleActions.add(new Action(reserveSphere, location, state, color));
 				// Move a sphere on the board to a higher location
 				for (PylosSphere sphere : board.getSpheres(color)) {
-					if(sphere.canMoveTo(location)) possibleActions.add(new Action(sphere, location, state, color));
+					if(sphere.canMoveTo(location) && !sphere.isReserve()) possibleActions.add(new Action(sphere, location, state, color));
 				}
 			}
 		}
@@ -145,12 +144,60 @@ public class StudentPlayer extends PylosPlayer {
 		return bestScore;
 	}
 
+	/** SIMULATION **/
+	private int simulateRemove(Action action, boolean firstSphere, PylosGameSimulator simulator, PylosBoard board, int depth, int alpha, int beta) {
+		int bestScore;
+		// Get previous State
+		PylosSphere sphere = action.pylosSphere;
+		PylosGameState prevState = simulator.getState();
+		PylosPlayerColor prevColor = simulator.getColor();
+		PylosLocation prevLocation = action.pylosSphere.getLocation();
+		// Simulate movement
+		simulator.removeSphere(sphere);
+		// Recursion - Simulate further movement
+		if(WANNES) bestScore = minimax(simulator, board, depth-1, alpha, beta);
+		else bestScore = minimax(simulator, board, depth, alpha, beta);
+		// Reset board
+		if(firstSphere) simulator.undoRemoveFirstSphere(sphere, prevLocation, prevState, prevColor);
+		else simulator.undoRemoveSecondSphere(sphere, prevLocation, prevState, prevColor);
+		return bestScore;
+	}
+
+	private int simulateMove(Action action, PylosGameSimulator simulator, PylosBoard board, int depth, int alpha, int beta) {
+		// Get previous State
+		PylosGameState prevState = simulator.getState();
+		PylosPlayerColor prevColor = simulator.getColor();
+		PylosLocation prevLocation = action.pylosSphere.getLocation();
+		// Simulate movement
+		simulator.moveSphere(action.pylosSphere, action.location);
+		// Recursion - Simulate further movement
+		int bestScore = minimax(simulator, board, depth-1, alpha, beta);
+		// Reset board
+		if(prevLocation == null) simulator.undoAddSphere(action.pylosSphere, prevState, prevColor);
+		else simulator.undoMoveSphere(action.pylosSphere, prevLocation, prevState, prevColor);
+		return bestScore;
+	}
+
+	private int simulatePass(PylosGameSimulator simulator, PylosBoard board, int depth, int alpha, int beta) {
+		// Get previous State
+		PylosGameState prevState = simulator.getState();
+		PylosPlayerColor prevColor = simulator.getColor();
+		// Simulate movement
+		simulator.pass();
+		// Recursion - Simulate further movement
+		int bestScore = minimax(simulator, board, depth-1, alpha, beta);
+		// Reset board
+		simulator.undoPass(prevState, prevColor);
+		return bestScore;
+	}
+
 	/** EVALUATION **/
 	public int evaluate(PylosBoard board) {
 		// Calculate a value for the board state after a certain move
 		int weight_reserves = 4;
 		int weight_middleControl = 1;
 		int weight_squares = 1;
+		int weight_figures = 1;
 
 		PylosPlayerColor playerColor = this.PLAYER_COLOR;
 		PylosPlayerColor opponentColor = playerColor.other();
@@ -165,12 +212,10 @@ public class StudentPlayer extends PylosPlayer {
 		int centerScore = getCenters(playerColor, board) - getCenters(opponentColor, board);
 
 		// Amount of T and L figures
-		int figureScore = getFiguresScore(playerColor, board) - getFiguresScore(opponentColor, board);
+		//int figureScore = getFiguresScore(playerColor, board) - getFiguresScore(opponentColor, board);
 //		int figureScore = 0;
 
-		// todo: As much balls high
-
-		return weight_reserves*reservesScore + weight_squares*squareScore + weight_middleControl*centerScore + figureScore;
+		return weight_reserves*reservesScore + weight_squares*squareScore + weight_middleControl*centerScore /*+ weight_figures*figureScore*/;
 	}
 	private int getSquares(PylosPlayerColor playerColor, PylosBoard board) {
 		int count = 0;
@@ -388,52 +433,7 @@ public class StudentPlayer extends PylosPlayer {
 		return adj;
 	}
 
-	/** SIMULATION **/
-	private int simulateRemove(Action action, boolean firstSphere, PylosGameSimulator simulator, PylosBoard board, int depth, int alpha, int beta) {
-		int bestScore;
-		// Get previous State
-		PylosSphere sphere = action.pylosSphere;
-		PylosGameState prevState = simulator.getState();
-		PylosPlayerColor prevColor = simulator.getColor();
-		PylosLocation prevLocation = action.pylosSphere.getLocation();
-		// Simulate movement
-		simulator.removeSphere(sphere);
-		// Recursion - Simulate further movement
-		if(WANNES) bestScore = minimax(simulator, board, depth-1, alpha, beta);
-		else bestScore = minimax(simulator, board, depth, alpha, beta);
-		// Reset board
-		if(firstSphere) simulator.undoRemoveFirstSphere(sphere, prevLocation, prevState, prevColor);
-		else simulator.undoRemoveSecondSphere(sphere, prevLocation, prevState, prevColor);
-		return bestScore;
-	}
 
-	private int simulateMove(Action action, PylosGameSimulator simulator, PylosBoard board, int depth, int alpha, int beta) {
-		// Get previous State
-		PylosGameState prevState = simulator.getState();
-		PylosPlayerColor prevColor = simulator.getColor();
-		PylosLocation prevLocation = action.pylosSphere.getLocation();
-		// Simulate movement
-		simulator.moveSphere(action.pylosSphere, action.location);
-		// Recursion - Simulate further movement
-		int bestScore = minimax(simulator, board, depth-1, alpha, beta);
-		// Reset board
-		if(prevLocation == null) simulator.undoAddSphere(action.pylosSphere, prevState, prevColor);
-		else simulator.undoMoveSphere(action.pylosSphere, prevLocation, prevState, prevColor);
-		return bestScore;
-	}
-
-	private int simulatePass(PylosGameSimulator simulator, PylosBoard board, int depth, int alpha, int beta) {
-		// Get previous State
-		PylosGameState prevState = simulator.getState();
-		PylosPlayerColor prevColor = simulator.getColor();
-		// Simulate movement
-		simulator.pass();
-		// Recursion - Simulate further movement
-		int bestScore = minimax(simulator, board, depth-1, alpha, beta);
-		// Reset board
-		simulator.undoPass(prevState, prevColor);
-		return bestScore;
-	}
 
 	public class Action {
 		int score;

@@ -2,6 +2,18 @@ package be.kuleuven.pylos.player.student;
 
 import be.kuleuven.pylos.game.*;
 import be.kuleuven.pylos.player.PylosPlayer;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
+
+
+import be.kuleuven.pylos.game.*;
+import be.kuleuven.pylos.player.PylosPlayer;
 import be.kuleuven.pylos.player.PylosPlayerObserver;
 
 import java.util.ArrayList;
